@@ -266,6 +266,8 @@
     "build:webview": "cd webview && npm install && npm run build && cd ..",
     "package": "vsce package",
     "test": "node ./out/test/runTest.js",
+    "test:protocol": "vitest run",
+    "test:protocol:watch": "vitest",
     "test:webview": "cd webview && npm test",
     "lint": "eslint src/ --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
@@ -279,7 +281,8 @@
     "esbuild": "^0.20.x",
     "eslint": "^8.x",
     "prettier": "^3.x",
-    "typescript": "^5.x"
+    "typescript": "^5.x",
+    "vitest": "^2"
   },
   "dependencies": {
     "ws": "^8.x"
