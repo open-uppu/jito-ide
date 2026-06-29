@@ -10,9 +10,9 @@
 |---|---|---|---|---|
 | GAP-1 | `jito version` reports `0.1.0`; `JitoClient.verify()` regex requires `0.2.x` | **Hard** | jito-rel | ✅ Yes |
 | GAP-2 | `jito serve --format=jsonrpc --stream` subcommand does not exist | **Hard** | jito-rel | ✅ Yes |
-| GAP-3 | `webview/src/SettingsPage.tsx` imports `../types` (path bug) — `npm run compile` fails | **Hard** | jito-ide (this card) | ✅ Yes |
+| GAP-3 | `webview/src/SettingsPage.tsx` imports `../types` (path bug) — `npm run compile` fails | **Hard** | jito-ide (this card) | ✅ Yes — **RESOLVED** by 3.5 follow-up (current line 29 already uses `./types`) |
 | GAP-4 | `JITO_API_KEY` not provisioned in this sandbox | Soft | env / PM | ❌ — mock fallback works |
-| GAP-5 | No webview unit tests exist (`npm run test:webview` → "No test files found") | Soft | jito-ide | ❌ — protocol tests cover client |
+| GAP-5 | No webview unit tests exist (`npm run test:webview` → "No test files found") | Soft | jito-ide | ❌ — protocol tests cover client — **RESOLVED** 2026-06-29 by v0.1.0 follow-up: 36 tests, 100% lines / 94.81% branches |
 | GAP-6 | VS Code Extension Development Host (F5) is GUI-only; cannot be automated from this CLI sandbox | Hard | human | ✅ Yes (process) |
 
 The card spec says **"Fail → file bug card, pause phase"**. This document is that bug card.
@@ -249,6 +249,25 @@ Despite the gaps, the following DID pass in this run:
 - **jito-ide extension TypeScript build** (`tsc` clean for `src/*.ts`, webview broken — GAP-3)
 - **jito-ide protocol conformance** (`vitest run`, 14/14 tests pass against `mock-jito-server.mjs`)
 - **Scripts**: `scripts/phase-6.1-smoke.sh` + `scripts/phase-6.1-manual-f5.md` written and committed
+
+## Follow-up (2026-06-29, v0.1.0 closeout)
+
+After this gap report was filed, two more gaps were resolved by `open-uppu-be`:
+
+- **GAP-3** — `webview/src/SettingsPage.tsx` line 29 already imports from `./types`
+  (the path bug from Phase 3.5 was fixed before this card; current
+  `npm run compile` is clean).
+- **GAP-5** — webview unit test suite now exists: 36 tests across
+  `Composer.test.tsx` (19), `MessageCard.test.tsx` (12), `ModeSelector.test.tsx` (5).
+  Coverage on the 3 components: **100% lines, 94.81% branches, 100% functions,
+  100% statements** — exceeds the 90% MVP gate.
+- **VSIX packaging** — `vsce package` was failing on every platform because of
+  `assets/logo@2x.png` (vsce's regex excludes `@` in relative paths). Renamed
+  to `assets/logo-2x.png`; `dist/jito-ide-0.2.0.vsix` (381 KB, 27 files) now
+  builds without `--baseImagesUrl`.
+
+GAP-1, GAP-2, GAP-4, GAP-6 remain. The first three are jito-rel / env scope;
+GAP-6 is human-only (`scripts/phase-6.1-manual-f5.md`).
 
 ## Artefacts
 

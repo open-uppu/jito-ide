@@ -5,7 +5,53 @@ All notable changes to **jito-ide** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added (Phase 5.3 — v0.1.0 User Docs, open beta)
+- `docs/getting-started.md` (NEW, ~146 lines) — install prerequisites (`jito` v0.2.0 binary + Minimax API key), first-run configuration, first chat walkthrough, 5-prompt mode sampler, optional telemetry, full commands/keybinds reference. Mirrors `README.md` quickstart with full narrative.
+- `docs/modes.md` (existing — already user-facing with screenshots, color tokens, and "try asking" examples per mode; no rewrite needed for v0.1.0 doc pass).
+- `docs/file-context.md` (NEW, ~126 lines) — `@file` mention syntax + path resolution rules, sidebar pinning via `jito: Add File to Context`, how pins and `@` mentions compose, limits (binary, folder scope, no globs), 4 worked examples.
+- `docs/slash-commands.md` (NEW, ~166 lines) — full reference for the 5 commands (`/review`, `/test`, `/refactor`, `/doc`, `/explain`), how to invoke via `/`, the toolbar button, or direct typing, mode pairing guidance, composition rules, 3 "in the wild" scenarios.
+- `docs/jito-md.md` (NEW, ~201 lines) — `JITO.md` loader semantics, the `user → workspace → folder` hierarchy, what to put in (and not put in), the loader path is `src/context-loader.ts`, two copy-paste templates (single-service TS lib, multi-service monorepo).
+- `docs/security.md` (NEW, ~178 lines) — full data-flow diagram, storage map (SecretStorage for API key; `workspaceState` for mode + pins; `~/.jito/history.db` for chat), telemetry off-by-default opt-in schema, third-party licenses, threat model table, disclosure policy (`security@uppu.dev`).
+- `docs/troubleshooting.md` (NEW, ~238 lines) — 11 named failure modes (`jito not in PATH`, 401, 429, mode stuck, `@file` resolves nothing, blank webview, status-bar gray, settings won't save, JSON-RPC parse error), 7-item diagnostic checklist before opening an issue.
+- `CONTRIBUTING.md` (NEW, ~293 lines, repo root) — open-beta contribution guide: rules, repo tour, dev workflow, branch/commit conventions, PR template, `[Unreleased]` CHANGELOG entry requirement, label SLAs, anti-patterns to not-PNR-for, MIT licensing note.
+- `README.md` — refreshed Documentation section: groups docs into **user docs** (start here) and **project docs** (contributors); added links to all 7 new docs; license updated to MIT for the open beta.
+
+### Notes
+- No source-code changes; docs-only commit. No protocol/manifest bumps.
+- Phase 5.3 deliverable scope matches card `035b3e4f-f85a-4121-afe5-2c9126fec7db` (v0.1.0 User docs) and the existing Phase 5.3 `phase-5.3-docs-update` PR (#2, merged) by *not* duplicating its README/CHANGELOG/design.md/modes.md work — that PR already shipped.
+
 ## [0.2.0] - in progress
+
+### Added (Phase 6.2 — Webview unit tests + VSIX fix)
+- **Webview test suite (GAP-5 closed)** — 36 unit tests across 3 component files, all passing.
+  - `webview/vitest.config.ts` — happy-dom env, `src/**/*.test.{ts,tsx}` include, v8 coverage with 90% threshold (lines/branches/functions/statements) for the 3 tested components.
+  - `webview/src/test-setup.ts` — wires `@testing-library/jest-dom` v6 matchers.
+  - `webview/src/components/ModeSelector.test.tsx` (5 tests) — radiogroup role, active mode highlight, `onChange` callback, `disabled` prop, all 5 mode buttons.
+  - `webview/src/components/Composer.test.tsx` (19 tests) — Cmd+Enter / Ctrl+Enter send, send-disabled-when-empty / when disabled, slash palette open via button + via '/' key, click-outside close, palette item inserts command, char counter with warn-class past 8000 chars, mini-pill mode label/icon for all 5 modes.
+  - `webview/src/components/MessageCard.test.tsx` (12 tests) — `data-testid`/`data-role`/`data-mode`/`data-streaming` attrs, Stop button + `onCancel` callback while streaming, markdown rendering (fenced code, bold), footer items (📎 files / tokens formatted as `1.2k` / latency as `3.2s`), error state styling, empty content returns `null`.
+  - `webview/package.json` — new dev deps: `@testing-library/react@^14`, `@testing-library/jest-dom@^6`, `@testing-library/user-event@^14`, `happy-dom@^14`, `@vitest/coverage-v8@^1`. New script `test:coverage`.
+  - Coverage: **Composer 100% lines / 91.11% branches, MessageCard 100% lines / 96.47% branches, ModeSelector 100% lines / 100% branches**. Overall **100% lines, 94.81% branches, 100% functions, 100% statements** — exceeds the 90% MVP gate.
+
+### Fixed (Phase 6.2 — VSIX cross-platform packaging)
+- `vsce package` was failing with `ERROR Invalid image source in README.md: assets/logo@2x.png` on every platform (linux, macos, windows) because vsce 2.32.0's relative-link regex (`<(?:img|video)[^>]+src=["']([/.\w\s#-]+)["'][^>]*>`) excludes `@` from its character class. The `@2x` retina naming convention made `logo@2x.png` misclassify as absolute, so vsce skipped its rewrite; cheerio's later `new URL(src)` on the raw relative path then threw.
+  - Renamed `assets/logo@2x.png` → `assets/logo-2x.png`; updated `README.md` and `docs/design.md` references.
+  - `npx vsce package --no-dependencies` now produces `dist/jito-ide-0.2.0.vsix` (381 KB, 27 files) on linux/x64 without needing `--baseImagesUrl`. The 6-job `.github/workflows/release.yml` matrix (linux/macos/windows × x64/arm64) works as-is.
+
+### Verified
+- `npm run compile` — clean (tsc + vite).
+- `npm run test:protocol` — 14/14 pass.
+- `cd webview && npm test` — 36/36 pass.
+- `cd webview && npm run test:coverage` — coverage above 90% gate on every metric.
+- `npx vsce package --no-dependencies` — produces VSIX.
+- `scripts/phase-6.1-smoke.sh /tmp/jito` — **10/10** success, all 5 modes (mock provider; no `JITO_API_KEY`).
+
+### Known upstream blockers (not in jito-ide scope, carried over from Phase 6.1 gap report)
+- **GAP-1** — jito CLI still reports `0.1.0`; `JitoClient.verify()` requires `0.2.x`. **Owner: jito-rel.**
+- **GAP-2** — `jito serve --format=jsonrpc --stream` subcommand does not exist; JSON-RPC streaming path is unverified against the real binary. Tests run against `scripts/mock-jito-server.mjs`. **Owner: jito-rel.**
+- **GAP-4** — `JITO_API_KEY` not provisioned in sandbox. Live LLM smoke untested; mock fallback works. **Owner: env/PM.**
+- **GAP-6** — VS Code Extension Development Host (F5) is GUI-only; cannot be automated from this CLI sandbox. See `scripts/phase-6.1-manual-f5.md` for the human-run procedure.
 
 ### Added (Phase 3.4 — MessageCard)
 - `webview/src/components/MessageCard.tsx` (NEW, ~470 lines) — replaces the v0.1.0 inline "bubble" rendering with a proper card layout:

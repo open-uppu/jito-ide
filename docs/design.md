@@ -42,7 +42,7 @@ states.
 Use the shipped logo assets when the brand needs to appear outside the live
 webview:
 
-- [`assets/logo@2x.png`](../assets/logo@2x.png)
+- [`assets/logo-2x.png`](../assets/logo-2x.png)
 - [`assets/logo-mark.svg`](../assets/logo-mark.svg)
 
 Do not redraw the logo in product surfaces unless the asset format is the

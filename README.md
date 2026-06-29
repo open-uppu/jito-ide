@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo@2x.png" alt="jito-ide" width="240" />
+  <img src="assets/logo-2x.png" alt="jito-ide" width="240" />
 </p>
 
 <h3 align="center">Multi-mode AI for your editor.</h3>
@@ -165,14 +165,28 @@ npm run package
 
 ## Documentation
 
-- [docs/design.md](docs/design.md) — the visual language (tokens, modes, components)
-- [docs/modes.md](docs/modes.md) — per-mode reference
+### User docs — start here
+
+- [docs/getting-started.md](docs/getting-started.md) — install + your first chat
+- [docs/modes.md](docs/modes.md) — what each of the 5 modes is for, with examples
+- [docs/file-context.md](docs/file-context.md) — `@file` mentions and pinned files
+- [docs/slash-commands.md](docs/slash-commands.md) — `/review`, `/test`, `/refactor`, `/doc`, `/explain`
+- [docs/jito-md.md](docs/jito-md.md) — `JITO.md` project-memory loader
+- [docs/security.md](docs/security.md) — SecretStorage, telemetry, what's on disk
+- [docs/troubleshooting.md](docs/troubleshooting.md) — common errors and fixes
+
+### Project docs — for contributors
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to file issues, branch, test, PR
+- [docs/design.md](docs/design.md) — visual language (tokens, modes, components)
+- [docs/jito-jsonrpc.md](docs/jito-jsonrpc.md) — wire protocol contract
+- [docs/signing.md](docs/signing.md) — VSIX publish + Marketplace signing
 - [webview/DESIGN.md](webview/DESIGN.md) — full internal token spec
 - [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 
-Private — uppu internal. (Will move to MIT/Apache for open beta.)
+MIT (open beta) — see [LICENSE](LICENSE).
 
 ## Related
 
