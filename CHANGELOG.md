@@ -5,74 +5,39 @@ All notable changes to **jito-ide** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - in progress
+## [Unreleased]
 
-### Added (Phase 3.3 — StatusBar)
-- `src/status-bar.ts` — full rewrite of the v0.1.0 text-only StatusBar item.
-  New behavior:
-  - **Mode-colored backgrounds** — 5 custom theme colors
-    (`jitoStatusBar.{dev,reason,create,audit,universal}Background`) registered
-    via `package.json` `contributes.colors` with light/dark/high-contrast
-    defaults. The status bar picks the right color for the active mode and
-    tints the bar accordingly.
-  - **Animated ⚡ icon** — VS Code's `$(loading~spin)` codicon while
-    streaming, alternating with `$(zap)` on a 300 ms `setInterval` tick to
-    fake the pulse (no DOM/CSS keyframes inside a StatusBarItem).
-  - **Pulse animation when streaming** — alternates the foreground icon
-    and toggles the background between the mode tint and transparent,
-    giving a 600 ms breathing pulse with a mode-color halo.
-  - **Static gray when idle** — `$(zap)` + theme-default background, with
-    a slow 4 s opacity breathing on the bolt so the bar still feels alive.
-  - **Error state** — `$(zap) $(error)` glyph, magenta foreground,
-    `statusBarItem.errorBackground`. Tooltip truncates the message at 40
-    chars to keep the bar tidy on narrow windows.
-  - **Mode-flash** — 200 ms transient flash on the foreground color and a
-    prominent background, so the user sees the mode they just switched to.
-  - **Cross-platform safe** — the StatusBarItem API is identical on
-    macOS, Windows, and Linux; theme differences are absorbed by the
-    light/dark/high-contrast defaults in `package.json`. The class also
-    exposes `StatusBarState` (`'idle' | 'streaming' | 'error'`) for
-    future tests.
-- `package.json` — 10 new theme color contributions (5 background tints,
-  5 foreground accents) with light/dark/high-contrast defaults that
-  match the webview's `--color-mode-<m>-{primary,bg}` tokens. No
-  `main` / `activationEvents` / `contributes.commands` changes.
-- `webview/src/index.css` — added the `.status-bar` family plus a
-  retrofitted `.app-footer[data-state]` block so the chat-panel footer
-  mirrors the VS Code status bar exactly. Includes four `@keyframes`:
-  `bolt-breathe` (4 s idle), `bolt-pulse` (600 ms streaming),
-  `bolt-shake` (1.2 s error), and `bar-flash` (200 ms mode change).
-- `webview/preview-phase-3.3.html` — 6-section visual smoke test
-  (idle × 5 modes, streaming × 5 modes, error × 2 messages, mode-flash
-  timeline, app-footer wiring reference, VS Code chrome story mock).
+Placeholder for the v0.3.0 cycle. Empty for now.
 
-### Cross-platform notes
-- The spec asked for "CSS keyframes" inside the StatusBarItem. VS Code's
-  StatusBarItem has no DOM, so true CSS keyframes are not possible there.
-  We approximate the pulse via a JS `setInterval` ticker that alternates
-  the codicon between `$(loading~spin)` and `$(zap)`. The webview side
-  uses real `@keyframes` because the webview is a full browser context.
-- The spec asked for `backgroundColor: string` for per-mode tints. The
-  StatusBarItem API only accepts `ThemeColor | undefined` for
-  `backgroundColor`, so we register custom theme IDs in `package.json`
-  and reference them via `new vscode.ThemeColor('jitoStatusBar.<m>...')`.
+## [0.2.0] - 2026-06-29
 
-### Added (Phase 1.3 — Tailwind Theme Config)
-- `webview/tailwind.config.js` — flat top-level brand colors (`bg-canvas`,
-  `text-cyan`, `bg-magenta`), `mode.*` palettes with `DEFAULT` aliases so
-  `text-mode-dev` works out of the box, `borderRadius.panel` (8px) and
-  `borderRadius.card` (12px), animations `pulse-glow` / `slide-up` /
-  `fade-in` at 60–120 ms ease-out, `fontFamily.sans` / `mono` / `display`
-  bound to Phase 1.2 Geist stacks.
-- `webview/src/styles/utilities.css` — `.glow-cyan`, `.glow-magenta`,
-  `.pulse-mode`, `.gradient-mode-{dev,reason,create,audit,universal}`,
-  `.text-glow-{cyan,magenta}`, plus compound `.panel-surface` (8px) and
-  `.card-surface` (12px). Classes ship outside `@layer utilities` to avoid
-  Tailwind content-scan purge.
-- `webview/src/styles/tokens.css` — new semantic radius tokens
-  `--radius-panel` (8px) and `--radius-card` (12px).
-- `webview/preview-phase-1.3.html` — visual smoke test exercising every
-  new class (Tailwind bridge + custom utilities).
+### Added
+- **Design system (Phase 1.1–1.3)** — `webview/src/styles/{tokens,typography,spacing}.css` three-layer token model (primitive→semantic→mode), five-mode palette (`#00A3FF` dev, `#A855F7` reason, `#FF1B6B` create, `#F97316` audit, `#00E5FF` universal), Geist + Geist Mono fonts, Tailwind theme bridge (`webview/tailwind.config.js`).
+  - `webview/tailwind.config.js` adds flat brand colors, `mode.*` palettes with `DEFAULT` aliases, `borderRadius.panel` (8px), `borderRadius.card` (12px), `pulse-glow` / `slide-up` / `fade-in` animations, and Phase 1.2 Geist font stacks.
+  - `webview/src/styles/utilities.css` adds `.glow-cyan`, `.glow-magenta`, `.pulse-mode`, `.gradient-mode-{dev,reason,create,audit,universal}`, `.text-glow-{cyan,magenta}`, `.panel-surface`, and `.card-surface` outside `@layer utilities` to avoid Tailwind content-scan purge.
+  - `webview/src/styles/tokens.css` adds semantic radius tokens `--radius-panel` (8px) and `--radius-card` (12px).
+- **Branding & icons (Phase 2.1–2.2)** — `assets/{logo.svg,logo@2x.png,logo-mark.svg,logo-mono.svg,icon-128.png,icon-256.png}`, five stroke-only SVG mode icons in `webview/src/components/icons/{Dev,Reason,Create,Audit,Universal}.tsx`.
+- **Chat UI (Phase 3.1–3.5)** —
+  - Hero header + mode pill in `webview/src/App.tsx`.
+  - Per-mode stripe on message cards (`MessageList.tsx`).
+  - Branded, animated status bar with per-mode background tints (`src/status-bar.ts`) — 10 new theme colors (`jitoStatusBar.{dev,reason,create,audit,universal}{Background,Foreground}`) with light/dark/high-contrast defaults; alternating ⚡ bolt during streaming; error-state glyph; pulse on mode-switch; cross-platform safe via StatusBarItem API.
+    - Mode-colored backgrounds pick the active mode tint from custom `package.json` theme colors.
+    - Streaming alternates `$(loading~spin)` and `$(zap)` on a 300 ms `setInterval` tick because VS Code StatusBarItem content cannot use DOM/CSS keyframes.
+    - Idle state uses `$(zap)` with a theme-default background and a slow 4 s bolt breath.
+    - Error state uses `$(zap) $(error)`, magenta foreground, `statusBarItem.errorBackground`, and a 40-character tooltip truncation.
+    - Mode-switch flash applies a 200 ms transient foreground/background highlight.
+    - `StatusBarState` (`'idle' | 'streaming' | 'error'`) is exposed for tests.
+  - Full Settings page webview (`webview/src/SettingsPage.tsx`) with API-key field, jito path, default mode, telemetry toggle, max-context-files.
+  - `webview/src/index.css` mirrors the VS Code status bar in the chat-panel footer with `.status-bar`, `.app-footer[data-state]`, and `bolt-breathe`, `bolt-pulse`, `bolt-shake`, `bar-flash` keyframes.
+  - `webview/preview-phase-3.3.html` provides visual smoke coverage for idle modes, streaming modes, error messages, mode-flash timeline, app-footer wiring, and VS Code chrome mock.
+- **Composer (Phase 4.1)** — Multi-line text input with toolbar and keyboard shortcuts, replacing the v0.1.0 single-line `InputBar.tsx` (`webview/src/components/Composer.tsx`, ~280 lines).
+- **Docs (Phase 5.3)** — `docs/design.md` (user/contributor visual language), `docs/modes.md` (mode reference), README rewrite with hero + 5 mode screenshots + tagline "Multi-mode AI for your editor."
+
+### Changed
+- **README** — rewritten with `<p align="center">` hero (`assets/logo@2x.png`), tagline, inline 5-mode screenshots (`artifacts/phase-3.3-per-mode/streaming-{0..4}-{mode}.png`), and v0.2.0 status table.
+- **package.json marketplace metadata** — `icon`, `galleryBanner.color` (`#0B1220`, dark theme), `qna` link, `homepage` URL, plus 10 new `contributes.colors` for status-bar theme tints.
+- **Status bar** — full rewrite of `src/status-bar.ts` (v0.1.0 was a text-only `$(zap)` StatusBarItem); new behavior is animated, mode-tinted, and exposes `StatusBarState` for tests.
+- **Webview chat surface** — Composer now handles multi-line input + shortcuts; `InputBar.tsx` removed.
 
 ## [0.1.0] - 2026-06-29 (kickoff)
 
