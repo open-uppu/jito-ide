@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - in progress
 
+### Added (Phase 3.4 — MessageCard)
+- `webview/src/components/MessageCard.tsx` (NEW, ~470 lines) — replaces the v0.1.0 inline "bubble" rendering with a proper card layout:
+  - **4px mode-color stripe** on the left edge of every card (cyan/violet/pink/orange/cyan per `JitoMode`). Error state overrides to magenta.
+  - **Header** — mode-icon avatar (24px tinted square, uses `<ModeIcons[mode]>` from Phase 2.2), uppercase mode label, 24h `HH:MM` timestamp, and a `Stop` button while the message is streaming.
+  - **Body** — `react-markdown` + `remark-gfm` (GFM tables, task lists, strikethrough, autolinks) with a custom `code` component that pipes fenced blocks through `react-syntax-highlighter` (`Prism` + `oneDark`). Inline code stays as plain monospace. While `msg.streaming === true`, body renders as raw `<pre>` with `whiteSpace: pre-wrap` — no markdown parsing — so delta events append with zero flicker.
+  - **Footer** — only when not streaming and at least one of the fields is present: `📎 N file(s) · NN tokens · N.Ns`. File count from `msg.contextFiles?.length`. Tokens from `msg.usage.input_tokens + output_tokens` (formatted as `1.2k` past 1000). Latency from `msg.endedAt - msg.startedAt` (formatted as `3.2s` past 1000ms).
+  - **User vs assistant** — assistant cards left-align (`margin-right: auto`), user cards right-align (`margin-left: auto`), max-width `min(100%, 760px)`.
+  - **Error state** — magenta stripe + magenta border + no footer.
+  - **Streaming state** — raw text body + Stop button + no footer.
+  - **Empty content** — returns `null` instead of rendering an empty card.
+  - Test affordances — `data-testid="message-card"`, `data-role`, `data-mode`, `data-streaming` attributes on the article element.
+- `webview/src/components/MessageList.tsx` — simplified to render `<MessageCard>` per message. The empty-state placeholder still lives here.
+- `webview/src/App.tsx` — extended `ChatMessage` with optional `usage`, `contextFiles`, `startedAt`, `endedAt` fields. Wired `messageUpdate` events to stamp `startedAt` on first `streaming: true` and `endedAt` on `streaming: false`. `handleSend` now forwards an optional `contextFiles: string[]` (default `[]`) so the host can attach `@file` paths to a turn.
+- `webview/package.json` — added 3 runtime deps (`react-markdown ^9`, `remark-gfm ^4`, `react-syntax-highlighter ^15`) and 1 dev dep (`@types/react-syntax-highlighter ^15`). Vite build: 1399 modules, 966KB JS / 331KB gzipped (warning is acceptable for v1; manual chunk split can come later).
+- `webview/preview-phase-3.4.html` — smoke-test preview with 6 mock messages covering every MessageCard branch.
+- `assets/smoke-phase-3.4.mjs` — puppeteer smoke-test driver. Saves 5 screenshots to `artifacts/phase-3.4-*.png` and asserts ≥5 cards, dev-mode footer, streaming Stop button, audit-mode card present. **0 console errors.**
+
 ### Added (Phase 4.1 — JSON-RPC Streaming)
 - Phase 4.1 — JSON-RPC streaming: lock wire protocol contract (docs/jito-jsonrpc.md), refactor src/jito-client.ts to server-assigned message-id model, add Node reference mock (scripts/mock-jito-server.mjs), add Vitest protocol-conformance suite (test/jito-client.test.ts).
 

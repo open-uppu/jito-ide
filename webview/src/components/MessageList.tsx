@@ -1,4 +1,18 @@
+/**
+ * MessageList.tsx — Scrollable list of MessageCards (Phase 3.4)
+ *
+ * Phase 3.4: replaced the inline "bubble" rendering with the new
+ * MessageCard component. The card now owns:
+ *   - 4px mode-color stripe on the left edge
+ *   - header (mode icon avatar + mode badge + timestamp + Stop)
+ *   - body (react-markdown + react-syntax-highlighter code blocks)
+ *   - footer (file count + tokens + latency)
+ *
+ * This container only handles scrolling, vertical spacing, and the
+ * empty-state placeholder. Per-message presentation lives in MessageCard.
+ */
 import type { ChatMessage } from '../App';
+import { MessageCard } from './MessageCard';
 
 interface Props {
   messages: ChatMessage[];
@@ -40,65 +54,7 @@ export function MessageList({ messages, onCancel }: Props) {
         </div>
       )}
       {messages.map((msg) => (
-        <div
-          key={msg.id}
-          style={{
-            display: 'flex',
-            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-          }}
-        >
-          <div
-            className={
-              msg.role === 'user'
-                ? 'bubble bubble--user'
-                : msg.error
-                ? 'bubble bubble--error'
-                : 'bubble bubble--assistant'
-            }
-          >
-            {msg.mode && msg.role === 'user' && (
-              <div
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  opacity: 0.7,
-                  marginBottom: 'var(--space-1)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 'var(--tracking-wide)',
-                }}
-              >
-                {msg.mode}
-              </div>
-            )}
-            <div>{msg.content || (msg.streaming ? '...' : '')}</div>
-            {msg.streaming && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  marginTop: 'var(--space-2)',
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--fg-tertiary)',
-                }}
-              >
-                <span className="streaming-dot" aria-hidden="true" />
-                <button
-                  onClick={() => onCancel(msg.id)}
-                  className="hover:opacity-100"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'inherit',
-                    cursor: 'pointer',
-                    padding: 0,
-                  }}
-                >
-                  Stop
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <MessageCard key={msg.id} msg={msg} onCancel={onCancel} />
       ))}
     </div>
   );
