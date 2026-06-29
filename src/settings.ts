@@ -1,11 +1,18 @@
 /**
  * settings.ts — VS Code configuration wrapper + SecretStorage for API key
+ *
+ * Phase 3.5 extension: adds getModel/setModel, getTheme/setTheme,
+ * hasApiKey, setTelemetry, restoreDefaults for the SettingsPage webview.
+ * The API key remains in SecretStorage (encrypted) — never written to
+ * VS Code configuration.
  */
 
 import * as vscode from 'vscode';
 import { JitoMode } from './jito-client';
 
 const SECRET_KEY = 'jito-ide.apiKey';
+
+export type ThemeChoice = 'dark' | 'light' | 'system';
 
 export class Settings {
   constructor(private readonly context: vscode.ExtensionContext) {}
@@ -20,6 +27,36 @@ export class Settings {
 
   async setApiKey(key: string): Promise<void> {
     await this.context.secrets.store(SECRET_KEY, key);
+  }
+
+  /** True iff a non-empty API key is stored in SecretStorage (or config fallback). */
+  async hasApiKey(): Promise<boolean> {
+    const k = await this.getApiKey();
+    return typeof k === 'string' && k.length > 0;
+  }
+
+  /** LLM model identifier passed to the jito subprocess. */
+  getModel(): string {
+    return this.get<string>('model') || 'minimax/MiniMax-M3';
+  }
+
+  async setModel(model: string): Promise<void> {
+    await this.set('model', model);
+  }
+
+  /** Visual theme (dark-first brand). */
+  getTheme(): ThemeChoice {
+    const t = this.get<string>('theme') || 'dark';
+    if (t === 'dark' || t === 'light' || t === 'system') return t;
+    return 'dark';
+  }
+
+  async setTheme(theme: ThemeChoice): Promise<void> {
+    await this.set('theme', theme);
+  }
+
+  async setTelemetry(enabled: boolean): Promise<void> {
+    await this.set('telemetry', enabled);
   }
 
   getJitoPath(): string {
@@ -47,7 +84,17 @@ export class Settings {
   }
 
   async openSettingsUi(): Promise<void> {
-    await vscode.commands.executeCommand('workbench.action.openSettings', 'jito-ide');
+    // Kept for backward compatibility — delegates to the webview panel
+    // opened via the SettingsUiPanel registered by extension.ts.
+    await vscode.commands.executeCommand('jito-ide.openSettings');
+  }
+
+  /** Restore all non-secret settings to their defaults (does NOT touch API key). */
+  async restoreDefaults(): Promise<void> {
+    await this.setModel('minimax/MiniMax-M3');
+    await this.setDefaultMode('dev');
+    await this.setTelemetry(false);
+    await this.setTheme('dark');
   }
 
   private get<T>(key: string): T | undefined {

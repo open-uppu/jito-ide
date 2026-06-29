@@ -18,6 +18,7 @@ import { StatusBar } from './status-bar';
 import { ContextLoader } from './context-loader';
 import { InlineEdit } from './inline-edit';
 import { Settings } from './settings';
+import { SettingsUiPanel } from './settings-ui';
 
 let jitoClient: JitoClient;
 let chatPanel: ChatPanel;
@@ -27,6 +28,7 @@ let statusBar: StatusBar;
 let contextLoader: ContextLoader;
 let inlineEdit: InlineEdit;
 let settings: Settings;
+let settingsUi: SettingsUiPanel;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   console.log('[jito-ide] activating…');
@@ -73,6 +75,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     fileContext
   );
   inlineEdit = new InlineEdit(jitoClient, settings);
+  // Phase 3.5 — full settings UI in a webview tab (replaces native settings).
+  settingsUi = new SettingsUiPanel(context.extensionUri, settings);
 
   // Register commands
   context.subscriptions.push(
@@ -82,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand('jito-ide.addFileContext', (uri: vscode.Uri) =>
       fileContext.addFile(uri)
     ),
-    vscode.commands.registerCommand('jito-ide.openSettings', () => settings.openSettingsUi())
+    vscode.commands.registerCommand('jito-ide.openSettings', () => settingsUi.open())
   );
 
   // Register webview providers
