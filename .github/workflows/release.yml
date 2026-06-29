@@ -1,31 +1,35 @@
 # .github/workflows/release.yml
 #
-# Cross-platform VSIX build matrix for jito-ide.
+# Cross-platform VSIX build matrix for jito-ide v0.2.0.
 #
-# The extension host is pure JS (compiled TypeScript) plus a webview bundle,
-# so the build itself is OS-agnostic. We still run it on every target OS
-# to catch any subtle path/encoding/line-ending regressions, AND because
-# `vsce publish` later will sign against a publisher identity — having
-# reproducible VSIX files from each platform in the run gives us a per-OS
-# audit trail in the GitHub Actions UI.
+# Spec: companies/jito-ide.md §v0.2.0 Roadmap, card
+#   "jito-ide v0.2.0 — Phase 6.2: VSIX Package + Cross-platform CI (5 builds)".
+#
+# Matrix is an explicit `include` map (not os × arch with exclude) so each
+# cell carries both the *runner* and the matching `vsce --target` triple.
+# This is more robust because:
+#   - ubuntu-latest is x64-only; we need ubuntu-24.04-arm for a true arm64 build.
+#   - macos-latest is Apple Silicon (arm64); macos-13 is the last Intel (x64) runner.
+#   - Windows arm64 (`windows-11-arm`) is omitted per card spec — compat
+#     with `@vscode/vsce` `--target win32-arm64` is unreliable for pure-JS
+#     extensions and not worth a 6th cell.
+#
+# Cells (5 total):
+#   1. ubuntu-latest       → linux-x64
+#   2. ubuntu-24.04-arm    → linux-arm64
+#   3. macos-13            → darwin-x64
+#   4. macos-latest        → darwin-arm64
+#   5. windows-latest      → win32-x64
 #
 # Triggers:
-#   1. push of tag v*  → full matrix + attach VSIX + (optional) publish
-#   2. workflow_dispatch → manual run, no publish
-#   3. pull_request   → quick matrix, no publish (CI smoke)
+#   - push of tag v*      → full matrix + (optional) publish + GH Release
+#   - workflow_dispatch   → manual run, build-only by default
+#   - pull_request        → quick matrix, no publish (so the 5 cells are
+#                           visible in the PR's workflow run before merge)
 #
-# Outputs:
-#   - 1 VSIX per (os, arch) = 6 VSIX files attached to the workflow run
-#   - `vsix/<os>-<arch>/jito-ide-<ver>.vsix` artifact per run
-#
-# Required secrets (set in repo Settings → Secrets):
-#   VSCE_PAT       — VS Marketplace Personal Access Token (only needed for publish)
-#
-# Phase-5.0: build + attach + sign-on-publish. macOS/Windows signing via
-# `vsce publish` uses the same PAT; the "Microsoft cert" referenced in the
-# card is in fact the publisher identity bound to that PAT (not a separate
-# Authenticode code-signing cert — VSIX signing for VS Marketplace is
-# cryptographic, not OS code-signing). See docs/signing.md.
+# Required secrets (set in repo Settings → Secrets) for publish only:
+#   VSCE_PAT              — VS Marketplace Personal Access Token
+#                           (Azure DevOps, scope: Marketplace Manage)
 
 name: release
 
@@ -48,44 +52,39 @@ on:
       - 'webview/package.json'
       - 'webview/package-lock.json'
       - '.github/workflows/release.yml'
+      - '.vscodeignore'
 
-# Cancel superseded runs on the same ref.
+# Cancel superseded PR runs on the same ref; tag runs must run to completion.
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
-  contents: write   # needed to create GH Releases from tags
+  contents: write   # needed for GH Release + artifact upload on tag pushes
 
 jobs:
   build:
-    name: build (${{ matrix.os }} / ${{ matrix.arch }})
+    name: build (${{ matrix.label }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Linux
-          - os: linux
-            arch: x64
+          - label: linux-x64
             runner: ubuntu-latest
-          - os: linux
-            arch: arm64
-            runner: ubuntu-24.04-arm           # GitHub-hosted arm64 runner
-          # macOS
-          - os: darwin
-            arch: x64
-            runner: macos-13                   # Intel
-          - os: darwin
-            arch: arm64
-            runner: macos-latest               # Apple Silicon (M1+)
-          # Windows
-          - os: win32
-            arch: x64
+            target: linux-x64
+          - label: linux-arm64
+            runner: ubuntu-24.04-arm
+            target: linux-arm64
+          - label: darwin-x64
+            runner: macos-13
+            target: darwin-x64
+          - label: darwin-arm64
+            runner: macos-latest
+            target: darwin-arm64
+          - label: win32-x64
             runner: windows-latest
-          - os: win32
-            arch: arm64
-            runner: windows-11-arm
+            target: win32-x64
 
     steps:
       - name: Checkout
@@ -105,8 +104,9 @@ jobs:
         run: |
           node --version
           npm --version
+          npx --yes @vscode/vsce --version
           uname -a 2>/dev/null || ver
-          echo "arch: ${{ matrix.arch }}"
+          echo "matrix: ${{ matrix.label }} on ${{ matrix.runner }}"
 
       - name: Install root deps
         run: npm ci
@@ -123,27 +123,46 @@ jobs:
         run: npm run build
 
       - name: Validate package.json
-        run: node -e "const p=require('./package.json'); if(!p.main||!p.publisher||!p.version) throw new Error('missing main/publisher/version'); console.log('OK', p.name+'@'+p.version, 'main='+p.main, 'publisher='+p.publisher);"
+        run: |
+          node -e "
+            const p = require('./package.json');
+            const required = ['name','displayName','description','version','publisher','engines','main'];
+            for (const k of required) {
+              if (!p[k]) throw new Error('package.json missing required field: '+k);
+            }
+            if (!/^0\.\d+\.\d+/.test(p.version)) throw new Error('version not semver: '+p.version);
+            if (p.publisher !== 'uppu') throw new Error('publisher must be \"uppu\", got: '+p.publisher);
+            console.log('OK', p.name+'@'+p.version, 'publisher='+p.publisher, 'main='+p.main);
+          "
 
-      - name: Package VSIX
-        run: npx @vscode/vsce package --no-dependencies --out "dist/${{ matrix.os }}-${{ matrix.arch }}.vsix"
+      - name: Package VSIX (per-target)
+        run: |
+          mkdir -p dist
+          npx --yes @vscode/vsce package \
+            --target ${{ matrix.target }} \
+            --no-dependencies \
+            --out "dist/jito-ide-${{ matrix.label }}.vsix"
 
       - name: Verify VSIX contents
         shell: bash
         run: |
-          VSIX="dist/${{ matrix.os }}-${{ matrix.arch }}.vsix"
+          VSIX="dist/jito-ide-${{ matrix.label }}.vsix"
           test -s "$VSIX" || (echo "VSIX missing"; exit 1)
           # Sanity: entry file is inside the package
           unzip -l "$VSIX" | grep -E "extension/out/extension\.js" >/dev/null
           # Sanity: package.json says what we expect
-          node -e "const j=JSON.parse(require('child_process').execSync('unzip -p \"'"$VSIX"'\" extension/package.json').toString()); if(j.version!='${{ github.ref_name }}'.replace(/^v/,'')) console.warn('version tag mismatch: package.json='+j.version+' tag='+process.env.GITHUB_REF_NAME); if(!j.main.endsWith('extension.js')) throw new Error('bad main: '+j.main);"
-          echo "VSIX verified: $(du -h $VSIX | cut -f1)"
+          VERSION_FROM_VSIX=$(unzip -p "$VSIX" extension/package.json | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).version))")
+          if [ "$VERSION_FROM_VSIX" != "$(node -p "require('./package.json').version")" ]; then
+            echo "::error::VSIX version mismatch: embedded=$VERSION_FROM_VSIX package=$(node -p "require('./package.json').version")"
+            exit 1
+          fi
+          echo "VSIX verified: $(du -h $VSIX | cut -f1) version=$VERSION_FROM_VSIX"
 
       - name: Upload VSIX as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vsix-${{ matrix.os }}-${{ matrix.arch }}
-          path: dist/${{ matrix.os }}-${{ matrix.arch }}.vsix
+          name: vsix-${{ matrix.label }}
+          path: dist/jito-ide-${{ matrix.label }}.vsix
           if-no-files-found: error
           retention-days: 14
 
@@ -151,6 +170,7 @@ jobs:
     name: publish to VS Marketplace
     needs: build
     # Only run on tag pushes, and only after every matrix cell succeeds.
+    # workflow_dispatch / pull_request runs are build-only by design.
     if: |
       github.event_name == 'push' &&
       startsWith(github.ref, 'refs/tags/v')
@@ -165,7 +185,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Verify PAT
+      - name: Verify VSCE_PAT
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
@@ -175,18 +195,23 @@ jobs:
           fi
           npx --yes @vscode/vsce verify-pat "${{ github.event.repository.owner }}"
 
-      - name: Publish VSIX (signs via Microsoft cert bound to PAT)
+      - name: Publish VSIX (canonical = linux-x64)
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
-          # Pick the linux/x64 VSIX as the canonical artifact (they're
-          # byte-identical because the build is OS-agnostic; only the
-          # first successful run is published).
-          VSIX=$(ls -1 dist/linux-x64.vsix 2>/dev/null || ls -1 dist/*.vsix | head -1)
+          # For a pure-JS extension the per-platform VSIX files are
+          # functionally identical; pick linux-x64 as the canonical artifact
+          # that vsce signs + uploads to the Marketplace.
+          VSIX="dist/jito-ide-linux-x64.vsix"
+          if [ ! -s "$VSIX" ]; then
+            echo "::error::canonical VSIX missing: $VSIX"
+            ls -la dist/ || true
+            exit 1
+          fi
           echo "Publishing $VSIX"
-          npx @vscode/vsce publish --packagePath "$VSIX" --no-dependencies
+          npx --yes @vscode/vsce publish --packagePath "$VSIX" --no-dependencies
 
-      - name: Tag release on GitHub
+      - name: Attach all VSIX + release notes to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true

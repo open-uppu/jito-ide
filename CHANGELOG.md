@@ -47,6 +47,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `npx vsce package --no-dependencies` — produces VSIX.
 - `scripts/phase-6.1-smoke.sh /tmp/jito` — **10/10** success, all 5 modes (mock provider; no `JITO_API_KEY`).
 
+### Changed (Phase 6.2 — VSIX Package + Cross-platform CI)
+- `package.json` — description tightened to `5 first-class modes, free, local-first,
+  powered by Minimax-M3` (was the longer `Multi-mode AI coding agent (dev/reason/...)`
+  string). Categories trimmed to `[Programming Languages, Machine Learning]` (was 4,
+  with stray `Other`/`Education`). Keywords reordered per spec:
+  `ai, agent, jito, chat, multi-mode, cursor-alternative` (dropped `openai`/`minimax`).
+- `.github/workflows/release.yml` — **5-cell** cross-platform build matrix (Windows
+  arm64 omitted per card spec):
+  `ubuntu-latest` (linux-x64), `ubuntu-24.04-arm` (linux-arm64), `macos-13` (darwin-x64),
+  `macos-latest` (darwin-arm64), `windows-latest` (win32-x64). Triggers: `push: tags: v*`,
+  `workflow_dispatch`, `pull_request` (paths-filtered). Publish job gated on tag pushes
+  + `VSCE_PAT` secret; PR/manual runs are build-only by design. Per-cell pipeline:
+  checkout → node 20 → npm ci (root + webview) → tsc → vite build → vsce package --target
+  → unzip sanity check (embedded version matches package.json) → upload-artifact.
+- `.vscodeignore` — exclude `publish/`, `wb-helper*.sh`, `docs/`, `scripts/` from
+  VSIX payload (was leaking 21 publish/ docs files + 3 workboard helper scripts).
+- `webview/src/SettingsPage.tsx` — fix `import type { JitoMode } from '../types'`
+  → `'./types'`. Pre-existing bug from Phase 3.5 merge; blocked `npm run build:webview`
+  (and therefore `vsce package`). Flagged in Phase 6.1 GAP-3.
+
 ### Known upstream blockers (not in jito-ide scope, carried over from Phase 6.1 gap report)
 - **GAP-1** — jito CLI still reports `0.1.0`; `JitoClient.verify()` requires `0.2.x`. **Owner: jito-rel.**
 - **GAP-2** — `jito serve --format=jsonrpc --stream` subcommand does not exist; JSON-RPC streaming path is unverified against the real binary. Tests run against `scripts/mock-jito-server.mjs`. **Owner: jito-rel.**

@@ -29,9 +29,11 @@ webview/package-lock.json
 # Repo meta / CI / docs we don't ship in the VSIX
 .github/**
 docs/**
+publish/**
 scripts/**
 wb-helper.sh
 wb-helper.sh.*
+wb-helper*.sh
 
 # Source maps / generated types
 **/*.map

@@ -10,3 +10,12 @@ dist/
 *.tsbuildinfo
 coverage/
 .eslintcache
+
+# Phase 6.2 — ship VSIX proof artifacts (under artifacts/phase-6.2/) but
+# exclude the throwaway build artifacts under dist/.
+artifacts/phase-*/
+!artifacts/phase-6.2/
+
+# Worktree-shared node_modules symlinks
+/node_modules
+/webview/node_modules

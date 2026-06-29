@@ -1,7 +1,7 @@
 {
   "name": "jito-ide",
-  "displayName": "jito ⚡ — Multi-mode AI Agent",
-  "description": "Multi-mode AI coding agent (dev/reason/create/audit/universal). Powered by jito v0.2.0 + Minimax-M3. Free, local-first, 5 first-class modes.",
+  "displayName": "jito \u26a1 \u2014 Multi-mode AI Agent",
+  "description": "5 first-class modes, free, local-first, powered by Minimax-M3",
   "version": "0.2.0",
   "publisher": "uppu",
   "license": "SEE LICENSE IN LICENSE",
@@ -27,17 +27,13 @@
   },
   "categories": [
     "Programming Languages",
-    "Other",
-    "Machine Learning",
-    "Education"
+    "Machine Learning"
   ],
   "keywords": [
     "ai",
     "agent",
-    "chat",
-    "openai",
-    "minimax",
     "jito",
+    "chat",
     "multi-mode",
     "cursor-alternative"
   ],
@@ -266,8 +262,6 @@
     "build:webview": "cd webview && npm install && npm run build && cd ..",
     "package": "vsce package",
     "test": "node ./out/test/runTest.js",
-    "test:protocol": "vitest run",
-    "test:protocol:watch": "vitest",
     "test:webview": "cd webview && npm test",
     "lint": "eslint src/ --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
@@ -281,8 +275,7 @@
     "esbuild": "^0.20.x",
     "eslint": "^8.x",
     "prettier": "^3.x",
-    "typescript": "^5.x",
-    "vitest": "^2"
+    "typescript": "^5.x"
   },
   "dependencies": {
     "ws": "^8.x"
