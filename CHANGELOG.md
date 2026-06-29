@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - in progress
 
+### Added (Phase 4.1 — JSON-RPC Streaming)
+- Phase 4.1 — JSON-RPC streaming: lock wire protocol contract (docs/jito-jsonrpc.md), refactor src/jito-client.ts to server-assigned message-id model, add Node reference mock (scripts/mock-jito-server.mjs), add Vitest protocol-conformance suite (test/jito-client.test.ts).
+
 ### Added (Phase 3.3 — StatusBar)
 - `src/status-bar.ts` — full rewrite of the v0.1.0 text-only StatusBar item.
   New behavior:
