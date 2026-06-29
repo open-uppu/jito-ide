@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo@2x.png" alt="jito-ide" width="240" />
+  <img src="assets/logo-2x.png" alt="jito-ide" width="240" />
 </p>
 
 <h3 align="center">Multi-mode AI for your editor.</h3>
