@@ -296,6 +296,117 @@ html, body, #root {
   }
 }
 
+/* ---------- Phase 3.2 — ModePill (5-color-coded, animated) ----------- */
+/* A pill is a single toggleable button. Color is bound per-instance via
+ * the inline custom props set by <ModePill>:
+ *   --pill-color       → var(--color-mode-<m>-primary)   (border + text)
+ *   --pill-color-bg    → var(--color-mode-<m>-bg)        (hover tint + glow)
+ *   --pill-color-fg    → var(--color-mode-<m>-fg)        (reserved future)
+ * That keeps one CSS rule-set working for all 5 modes without authoring 5
+ * separate classes.
+ */
+
+.mode-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.mode-pill-group--legacy {
+  /* Same layout; kept as a hook in case back-compat consumers want to apply
+   * slightly tighter spacing when wrapped inside the legacy ModeSelector. */
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--pill-color);
+  border: var(--stroke-1) solid var(--pill-color);
+  border-radius: var(--radius-pill);
+  transition:
+    background    var(--duration-fast) var(--ease-standard),
+    color         var(--duration-fast) var(--ease-standard),
+    border-color  var(--duration-fast) var(--ease-standard),
+    box-shadow    var(--duration-base) var(--ease-standard),
+    transform     var(--duration-fast) var(--ease-standard);
+}
+
+/* Inactive hover: tint the bg with the mode color and lift the pill. */
+.mode-pill:hover:not(:disabled):not(.mode-pill--active) {
+  background: var(--pill-color-bg);
+  transform: scale(1.05);
+}
+
+/* Active: fill with the mode color, swap fg to on-accent, glow. */
+.mode-pill--active {
+  background: var(--pill-color);
+  color: var(--fg-on-accent);
+  border-color: var(--pill-color);
+  box-shadow: 0 0 12px var(--pill-color-bg);
+}
+
+.mode-pill:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Keyboard focus: cyan ring outline + tinted glow (a11y / keyboard nav). */
+.mode-pill:focus {
+  outline: none;
+}
+.mode-pill:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--state-focus-ring),
+    0 0 0 1px var(--pill-color),
+    0 0 12px var(--pill-color-bg);
+}
+
+.mode-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.mode-pill__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+.mode-pill__icon svg {
+  display: block;
+}
+
+.mode-pill__label {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Reduced motion: drop the lift / scale transforms but keep color crossfade
+ * (transitions are short and intentional, so leaving the crossfade is fine). */
+@media (prefers-reduced-motion: reduce) {
+  .mode-pill {
+    transform: none !important;
+  }
+  .mode-pill:hover:not(:disabled):not(.mode-pill--active),
+  .mode-pill:active:not(:disabled) {
+    transform: none;
+  }
+}
+
 /* ---------- Streaming indicator ---------------------------------------- */
 
 .streaming-dot {
