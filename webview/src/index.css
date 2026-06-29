@@ -1,20 +1,208 @@
+/* ============================================================================
+ * jito-ide v0.2.0 — webview root stylesheet
+ * Imports the design-system layer first, then Tailwind's base/utilities last
+ * so utility classes can compose on top of our tokens.
+ * ========================================================================== */
+
+@import "./styles/tokens.css";
+@import "./styles/spacing.css";
+@import "./styles/typography.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- Base (consume semantic tokens) ------------------------------ */
+
 :root {
-  font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 13px;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--fg-primary);
+  background: var(--bg-canvas);
 }
 
-body {
+html, body, #root {
+  height: 100%;
   margin: 0;
   padding: 0;
-  background: var(--vscode-editor-background);
-  color: var(--vscode-editor-foreground);
+  background: var(--bg-canvas);
+  color: var(--fg-primary);
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+
+/* ---------- Brand mark / logo strip ------------------------------------- */
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--fg-primary);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.brand-mark__bolt {
+  color: var(--accent-primary);
+  text-shadow: 0 0 12px var(--color-jito-cyan-glow);
+  font-size: var(--text-lg);
+  line-height: var(--leading-none);
+}
+
+/* ---------- Mode chip (active) ----------------------------------------- */
+
+.mode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mode-chip-gap);
+  padding: var(--mode-chip-py) var(--mode-chip-px);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-sm);
+  background: var(--mode-active-bg);
+  color: var(--mode-active-fg);
+  border: var(--stroke-1) solid var(--mode-active-primary);
+}
+
+/* ---------- Send button ------------------------------------------------ */
+
+.btn-send {
+  padding: var(--button-py) var(--space-4);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  background: var(--accent-primary);
+  color: var(--fg-on-accent);
+  border: var(--stroke-1) solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-standard),
+              box-shadow   var(--duration-base) var(--ease-standard);
+}
+.btn-send:hover:not(:disabled) {
+  background: var(--accent-primary-dim);
+  box-shadow: var(--shadow-glow-cyan);
+}
+.btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-send:focus-visible {
+  outline: none;
+  box-shadow: var(--state-focus-ring), var(--shadow-glow-cyan);
+}
+
+/* ---------- Input textarea --------------------------------------------- */
+
+.input-chat {
+  flex: 1;
+  background: var(--bg-raised);
+  color: var(--fg-primary);
+  border: var(--stroke-1) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--input-py) var(--input-px);
+  font-size: var(--text-md);
+  font-family: var(--font-sans);
+  resize: none;
+  transition: border-color var(--duration-base) var(--ease-standard),
+              box-shadow   var(--duration-base) var(--ease-standard);
+}
+.input-chat::placeholder { color: var(--fg-tertiary); }
+.input-chat:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: var(--state-focus-ring);
+}
+
+/* ---------- Message bubbles -------------------------------------------- */
+
+.bubble {
+  max-width: 85%;
+  padding: var(--card-py) var(--card-px);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.bubble--user {
+  background: var(--accent-primary);
+  color: var(--fg-on-accent);
+  border: var(--stroke-1) solid var(--accent-primary);
+}
+.bubble--assistant {
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  border: var(--stroke-1) solid var(--border-subtle);
+}
+.bubble--error {
+  background: var(--mode-active-bg);
+  color: var(--accent-critical);
+  border: var(--stroke-1) solid var(--accent-critical);
+}
+
+/* ---------- Header / footer --------------------------------------------- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--stroke-1) solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--fg-tertiary);
+  border-top: var(--stroke-1) solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+
+/* ---------- Mode selector --------------------------------------------- */
+
+.mode-selector {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+}
+.mode-selector__btn {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--fg-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard),
+              color      var(--duration-fast) var(--ease-standard);
+}
+.mode-selector__btn:hover:not(:disabled) {
+  background: var(--state-hover-bg);
+  color: var(--fg-primary);
+}
+.mode-selector__btn--active {
+  background: var(--mode-active-bg);
+  color: var(--mode-active-fg);
+  border: var(--stroke-1) solid var(--mode-active-primary);
+}
+.mode-selector__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- Streaming indicator ---------------------------------------- */
+
+.streaming-dot {
+  display: inline-block;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent-primary);
+  box-shadow: var(--shadow-glow-cyan);
+  animation: streaming-pulse var(--duration-slow) var(--ease-standard) infinite;
+}
+@keyframes streaming-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
 }

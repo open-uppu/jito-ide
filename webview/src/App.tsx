@@ -20,6 +20,12 @@ export function App() {
   const [mode, setMode] = useState<JitoMode>('dev');
   const [busy, setBusy] = useState(false);
 
+  // Sync active mode to <html data-mode="..."> so token mode attributes
+  // (--mode-active-primary/fg/bg) rebind reactively across the tree.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-mode', mode);
+  }, [mode]);
+
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const { type, payload } = event.data;
@@ -64,18 +70,26 @@ export function App() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">⚡</span>
-          <span className="font-semibold">jito</span>
+      <header className="app-header">
+        <div className="brand-mark">
+          <span className="brand-mark__bolt" aria-hidden="true">⚡</span>
+          <span>jito</span>
         </div>
         <ModeSelector value={mode} onChange={setMode} disabled={busy} />
       </header>
       <MessageList messages={messages} onCancel={handleCancel} />
       <InputBar onSend={handleSend} disabled={busy} mode={mode} />
-      <footer className="px-3 py-1 text-xs opacity-50 flex justify-between">
-        <span>{messages.length} messages</span>
-        <button onClick={handleClear} className="hover:opacity-100">Clear</button>
+      <footer className="app-footer">
+        <span className="tracking-wide uppercase">
+          {messages.length} messages · <span className="mode-chip">{mode}</span>
+        </span>
+        <button
+          onClick={handleClear}
+          className="hover:opacity-100 opacity-60"
+          style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}
+        >
+          Clear
+        </button>
       </footer>
     </div>
   );

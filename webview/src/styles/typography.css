@@ -1,0 +1,99 @@
+/* ============================================================================
+ * jito-ide v0.2.0 — Typography (Phase 1.1)
+ * File: webview/src/styles/typography.css
+ *
+ * Font stack: prefers VS Code's editor font (consistency with editor panes),
+ * falls back to a tight monospace for code-heavy chat content.
+ * Scale: 12 / 13 / 14 / 16 / 20 / 24 / 32 px (geometric, not fluid).
+ * Line-height ratio: ~1.45 for body, ~1.2 for display.
+ * ========================================================================== */
+
+:root {
+  /* Font families */
+  --font-sans: var(--vscode-font-family, -apple-system, BlinkMacSystemFont,
+                    'Segoe UI', 'Inter', system-ui, sans-serif);
+  --font-mono: var(--vscode-editor-font-family, ui-monospace, 'JetBrains Mono',
+                    'Fira Code', 'SF Mono', Menlo, Consolas, monospace);
+  --font-display: var(--vscode-font-family, -apple-system, BlinkMacSystemFont,
+                       'Segoe UI', 'Inter', system-ui, sans-serif);
+
+  /* Weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Line heights */
+  --leading-none:    1;
+  --leading-tight:   1.2;   /* display, headings */
+  --leading-snug:    1.35;  /* UI labels */
+  --leading-normal:  1.45;  /* body, chat messages */
+  --leading-relaxed: 1.6;   /* long-form explanations */
+
+  /* Letter spacing */
+  --tracking-tight:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-uppercase: 0.08em;
+
+  /* Type scale (mirrors --text-* in tokens.css) */
+  --text-xs:    12px;  /* metadata, timestamps, footer */
+  --text-sm:    13px;  /* secondary UI, slash-command list */
+  --text-base:  14px;  /* default body, chat messages */
+  --text-md:    16px;  /* input, buttons */
+  --text-lg:    20px;  /* mode selector label */
+  --text-xl:    24px;  /* section headers */
+  --text-2xl:   32px;  /* empty state hero */
+}
+
+/* ---------- Base typography ---------------------------------------------- */
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--fg-primary);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em; /* slightly smaller than body so inline code aligns */
+}
+
+pre {
+  line-height: var(--leading-snug);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Utility classes (Tailwind-compatible naming) ---------------- */
+
+.text-xs    { font-size: var(--text-xs);    line-height: var(--leading-snug); }
+.text-sm    { font-size: var(--text-sm);    line-height: var(--leading-snug); }
+.text-base  { font-size: var(--text-base);  line-height: var(--leading-normal); }
+.text-md    { font-size: var(--text-md);    line-height: var(--leading-normal); }
+.text-lg    { font-size: var(--text-lg);    line-height: var(--leading-tight); }
+.text-xl    { font-size: var(--text-xl);    line-height: var(--leading-tight); }
+.text-2xl   { font-size: var(--text-2xl);   line-height: var(--leading-tight); }
+
+.font-mono    { font-family: var(--font-mono); }
+.font-medium  { font-weight: var(--weight-medium); }
+.font-semibold { font-weight: var(--weight-semibold); }
+.font-bold    { font-weight: var(--weight-bold); }
+
+.leading-tight   { line-height: var(--leading-tight); }
+.leading-normal  { line-height: var(--leading-normal); }
+.leading-relaxed { line-height: var(--leading-relaxed); }
+
+.tracking-wide { letter-spacing: var(--tracking-wide); }
+.uppercase     { text-transform: uppercase; }
+
+.fg-primary   { color: var(--fg-primary); }
+.fg-secondary { color: var(--fg-secondary); }
+.fg-tertiary  { color: var(--fg-tertiary); }
+.fg-disabled  { color: var(--fg-disabled); }
+.fg-accent    { color: var(--accent-primary); }
+.fg-danger    { color: var(--accent-critical); }

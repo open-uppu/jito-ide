@@ -16,23 +16,24 @@ const MODES: { id: JitoMode; label: string; icon: string }[] = [
 
 export function ModeSelector({ value, onChange, disabled }: Props) {
   return (
-    <div className="flex gap-1 bg-white/5 rounded p-0.5">
-      {MODES.map((m) => (
-        <button
-          key={m.id}
-          onClick={() => onChange(m.id)}
-          disabled={disabled}
-          title={m.label}
-          className={`px-2 py-0.5 text-xs rounded transition-colors ${
-            value === m.id
-              ? 'bg-blue-600 text-white'
-              : 'hover:bg-white/10 opacity-70 hover:opacity-100'
-          } disabled:opacity-40 disabled:cursor-not-allowed`}
-        >
-          <span className="mr-1">{m.icon}</span>
-          {m.label}
-        </button>
-      ))}
+    <div className="mode-selector" role="radiogroup" aria-label="Chat mode">
+      {MODES.map((m) => {
+        const active = value === m.id;
+        return (
+          <button
+            key={m.id}
+            onClick={() => onChange(m.id)}
+            disabled={disabled}
+            title={m.label}
+            role="radio"
+            aria-checked={active}
+            className={`mode-selector__btn ${active ? 'mode-selector__btn--active' : ''}`}
+          >
+            <span aria-hidden="true" style={{ marginRight: 'var(--space-1)' }}>{m.icon}</span>
+            {m.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
