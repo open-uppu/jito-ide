@@ -24,6 +24,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - in progress
 
+### Added (Phase 6.2 — Webview unit tests + VSIX fix)
+- **Webview test suite (GAP-5 closed)** — 36 unit tests across 3 component files, all passing.
+  - `webview/vitest.config.ts` — happy-dom env, `src/**/*.test.{ts,tsx}` include, v8 coverage with 90% threshold (lines/branches/functions/statements) for the 3 tested components.
+  - `webview/src/test-setup.ts` — wires `@testing-library/jest-dom` v6 matchers.
+  - `webview/src/components/ModeSelector.test.tsx` (5 tests) — radiogroup role, active mode highlight, `onChange` callback, `disabled` prop, all 5 mode buttons.
+  - `webview/src/components/Composer.test.tsx` (19 tests) — Cmd+Enter / Ctrl+Enter send, send-disabled-when-empty / when disabled, slash palette open via button + via '/' key, click-outside close, palette item inserts command, char counter with warn-class past 8000 chars, mini-pill mode label/icon for all 5 modes.
+  - `webview/src/components/MessageCard.test.tsx` (12 tests) — `data-testid`/`data-role`/`data-mode`/`data-streaming` attrs, Stop button + `onCancel` callback while streaming, markdown rendering (fenced code, bold), footer items (📎 files / tokens formatted as `1.2k` / latency as `3.2s`), error state styling, empty content returns `null`.
+  - `webview/package.json` — new dev deps: `@testing-library/react@^14`, `@testing-library/jest-dom@^6`, `@testing-library/user-event@^14`, `happy-dom@^14`, `@vitest/coverage-v8@^1`. New script `test:coverage`.
+  - Coverage: **Composer 100% lines / 91.11% branches, MessageCard 100% lines / 96.47% branches, ModeSelector 100% lines / 100% branches**. Overall **100% lines, 94.81% branches, 100% functions, 100% statements** — exceeds the 90% MVP gate.
+
+### Fixed (Phase 6.2 — VSIX cross-platform packaging)
+- `vsce package` was failing with `ERROR Invalid image source in README.md: assets/logo@2x.png` on every platform (linux, macos, windows) because vsce 2.32.0's relative-link regex (`<(?:img|video)[^>]+src=["']([/.\w\s#-]+)["'][^>]*>`) excludes `@` from its character class. The `@2x` retina naming convention made `logo@2x.png` misclassify as absolute, so vsce skipped its rewrite; cheerio's later `new URL(src)` on the raw relative path then threw.
+  - Renamed `assets/logo@2x.png` → `assets/logo-2x.png`; updated `README.md` and `docs/design.md` references.
+  - `npx vsce package --no-dependencies` now produces `dist/jito-ide-0.2.0.vsix` (381 KB, 27 files) on linux/x64 without needing `--baseImagesUrl`. The 6-job `.github/workflows/release.yml` matrix (linux/macos/windows × x64/arm64) works as-is.
+
+### Verified
+- `npm run compile` — clean (tsc + vite).
+- `npm run test:protocol` — 14/14 pass.
+- `cd webview && npm test` — 36/36 pass.
+- `cd webview && npm run test:coverage` — coverage above 90% gate on every metric.
+- `npx vsce package --no-dependencies` — produces VSIX.
+- `scripts/phase-6.1-smoke.sh /tmp/jito` — **10/10** success, all 5 modes (mock provider; no `JITO_API_KEY`).
+
+### Known upstream blockers (not in jito-ide scope, carried over from Phase 6.1 gap report)
+- **GAP-1** — jito CLI still reports `0.1.0`; `JitoClient.verify()` requires `0.2.x`. **Owner: jito-rel.**
+- **GAP-2** — `jito serve --format=jsonrpc --stream` subcommand does not exist; JSON-RPC streaming path is unverified against the real binary. Tests run against `scripts/mock-jito-server.mjs`. **Owner: jito-rel.**
+- **GAP-4** — `JITO_API_KEY` not provisioned in sandbox. Live LLM smoke untested; mock fallback works. **Owner: env/PM.**
+- **GAP-6** — VS Code Extension Development Host (F5) is GUI-only; cannot be automated from this CLI sandbox. See `scripts/phase-6.1-manual-f5.md` for the human-run procedure.
+
 ### Added (Phase 3.4 — MessageCard)
 - `webview/src/components/MessageCard.tsx` (NEW, ~470 lines) — replaces the v0.1.0 inline "bubble" rendering with a proper card layout:
   - **4px mode-color stripe** on the left edge of every card (cyan/violet/pink/orange/cyan per `JitoMode`). Error state overrides to magenta.
