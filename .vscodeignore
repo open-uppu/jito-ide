@@ -1,28 +1,70 @@
+# Source control & editor
+.git/**
+.gitignore
+.gitattributes
+
+# Build outputs we DO ship
+# (out/  is the compiled extension host — referenced by `main`)
+# (webview/dist/  is the bundled React UI — loaded by the webview)
+
+# Build scaffolding we DON'T ship
+src/**
+test/**
 .vscode/**
 .vscode-test/**
 node_modules/**
-src/**
-test/**
 webview/src/**
 webview/node_modules/**
 webview/vite.config.ts
 webview/tailwind.config.js
 webview/postcss.config.js
 webview/tsconfig.json
+webview/tsconfig.tsbuildinfo
+webview/preview*.html
 webview/index.html
+webview/DESIGN.md
+webview/package.json
+webview/package-lock.json
+
+# Repo meta / CI / docs we don't ship in the VSIX
+.github/**
+docs/**
+scripts/**
+wb-helper.sh
+wb-helper.sh.*
+
+# Source maps / generated types
 **/*.map
-**/.gitignore
+**/*.tsbuildinfo
+**/*.bak
+**/*.d.ts
+**/*.d.ts.map
+tsconfig.json
+
+# Local artefacts
+artifacts/**
+dist/**
+
+# Dev scripts / smoke tests
+assets/smoke-*.mjs
+assets/smoke-*
+
+# Editor / formatter / lint configs
 **/.eslintrc.json
-**/tsconfig.json
-**/tsconfig.tsbuildinfo
-**/esbuild.config.js
-.gitignore
-.gitattributes
-*.log
+**/.eslintrc.js
+**/.prettierrc
+**/.prettierrc.json
+
+# Env / logs
 .env
 .env.local
-.eslintrc.json
-.prettierrc
-.github/**
-README.md
-CHANGELOG.md
+*.log
+.DS_Store
+Thumbs.db
+
+# Keep these in the VSIX (explicit allow-list):
+#   package.json, package-lock.json (vsce keeps package.json automatically)
+#   README.md, CHANGELOG.md, LICENSE
+#   assets/ (icons, logos, svg)
+#   out/ (compiled extension)
+#   webview/dist/ (built webview UI)

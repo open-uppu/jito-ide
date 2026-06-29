@@ -31,7 +31,7 @@ export class ChatPanel {
     private readonly contextLoader: ContextLoader,
     private readonly fileContext: FileContextProvider
   ) {
-    this.jito.onEvent((event) => this.handleJitoEvent(event));
+    this.jito.on('event', (event: JitoEvent) => this.handleJitoEvent(event));
   }
 
   open(): void {

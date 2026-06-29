@@ -6,6 +6,13 @@
   "publisher": "uppu",
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
+  "icon": "assets/icon-128.png",
+  "galleryBanner": {
+    "color": "#0B1220",
+    "theme": "dark"
+  },
+  "qna": "https://github.com/open-uppu/jito-ide/discussions",
+  "markdown": "github",
   "repository": {
     "type": "git",
     "url": "https://github.com/open-uppu/jito-ide"
@@ -13,6 +20,7 @@
   "bugs": {
     "url": "https://github.com/open-uppu/jito-ide/issues"
   },
+  "homepage": "https://github.com/open-uppu/jito-ide#readme",
   "engines": {
     "vscode": "^1.85.0",
     "node": ">=20.0.0"
@@ -36,7 +44,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./dist/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {

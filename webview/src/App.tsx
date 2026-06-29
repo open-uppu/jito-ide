@@ -3,7 +3,7 @@ import { MessageList } from './components/MessageList';
 import { InputBar } from './components/InputBar';
 import { ModeSelector } from './components/ModeSelector';
 import { postToHost } from './lib/vscode';
-import type { JitoMode } from '../types';
+import type { JitoMode } from './types';
 
 export interface ChatMessage {
   id: string;
