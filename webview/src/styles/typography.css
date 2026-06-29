@@ -9,13 +9,14 @@
  * ========================================================================== */
 
 :root {
-  /* Font families */
-  --font-sans: var(--vscode-font-family, -apple-system, BlinkMacSystemFont,
-                    'Segoe UI', 'Inter', system-ui, sans-serif);
-  --font-mono: var(--vscode-editor-font-family, ui-monospace, 'JetBrains Mono',
-                    'Fira Code', 'SF Mono', Menlo, Consolas, monospace);
-  --font-display: var(--vscode-font-family, -apple-system, BlinkMacSystemFont,
-                       'Segoe UI', 'Inter', system-ui, sans-serif);
+  /* Font families
+   * Phase 1.2: tokens.css owns --font-ui and --font-mono (Geist-first stacks).
+   * Here we keep legacy aliases so any rule still referencing --font-sans or
+   * --font-display continues to resolve.
+   */
+  --font-sans: var(--font-ui);
+  /* --font-mono intentionally NOT redeclared — owned by tokens.css */
+  --font-display: var(--vscode-font-family, var(--font-ui));
 
   /* Weights */
   --weight-regular:  400;

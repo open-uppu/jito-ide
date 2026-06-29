@@ -12,10 +12,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- Phase 1.2 — Font faces (Geist + Geist Mono) ----------------- */
+/* Tokens.css defines --font-ui / --font-mono with Geist-first stacks.
+ * We bind them here so the cascade always wins over the Tailwind preflight
+ * which would otherwise apply a generic system stack. */
+
+html, body {
+  font-family: var(--font-ui);
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
 /* ---------- Base (consume semantic tokens) ------------------------------ */
 
 :root {
-  font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--fg-primary);
