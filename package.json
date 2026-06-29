@@ -2,7 +2,7 @@
   "name": "jito-ide",
   "displayName": "jito ⚡ — Multi-mode AI Agent",
   "description": "Multi-mode AI coding agent (dev/reason/create/audit/universal). Powered by jito v0.2.0 + Minimax-M3. Free, local-first, 5 first-class modes.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "uppu",
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
