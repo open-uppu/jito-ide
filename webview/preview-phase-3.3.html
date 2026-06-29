@@ -1,0 +1,335 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 3.3 visual smoke test
+  ==============================================
+  Exercises the webview-side status-bar styles (Phase 3.3 §2 of the spec).
+  Mirrors the VS Code native status bar item rendered by `src/status-bar.ts`
+  so a reviewer can verify the branded look end-to-end.
+
+  Sections:
+    1. All 5 mode states (idle)              — gray ⚡ + mode caption
+    2. All 5 mode states (streaming)         — pulsing ⚡ + mode-tinted bg
+    3. Error state                            — magenta ⚡ + danger border
+    4. Mode-flash animation timeline          — 4 snapshots at 0/60/120/180 ms
+    5. Side-by-side: VS Code chrome vs webview mirror (story only)
+    6. App footer retrofitted with data-state — live wiring reference
+
+  Open via vite dev server: http://localhost:5173/preview-phase-3.3.html
+  (Or any static server pointed at webview/.)
+-->
+<html lang="en" data-mode="dev">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <title>jito ⚡ Phase 3.3 — Status Bar smoke test</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css" />
+  <link rel="stylesheet" href="./src/styles/spacing.css" />
+  <link rel="stylesheet" href="./src/styles/typography.css" />
+  <link rel="stylesheet" href="./src/index.css" />
+
+  <style>
+    body { margin: 0; padding: 0; background: var(--bg-canvas); color: var(--fg-primary); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: var(--space-8) var(--space-4); }
+    h1 { font-size: var(--text-xl); margin: 0 0 var(--space-2); }
+    h2 {
+      font-size: var(--text-lg);
+      margin: var(--space-6) 0 var(--space-3);
+      color: var(--fg-secondary);
+      font-weight: var(--weight-medium);
+    }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      margin-bottom: var(--space-6);
+    }
+    .section {
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--bg-surface);
+      border: var(--stroke-1) solid var(--border-subtle);
+      border-radius: var(--radius-panel);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+    .cell {
+      padding: var(--space-3);
+      background: var(--bg-card);
+      border: var(--stroke-1) solid var(--border-subtle);
+      border-radius: var(--radius-card);
+    }
+    .cell h3 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--fg-secondary);
+      font-weight: var(--weight-medium);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+    }
+    .label-row {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      margin-top: var(--space-2);
+    }
+    .pin-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    /* Mode-flash timeline: 4 snapshots showing the 200ms flash decay. */
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-2);
+    }
+    .timeline__cell {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      align-items: flex-start;
+    }
+    .timeline__stamp {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+    }
+    /* Each cell pauses its animation at a different timestamp. */
+    .timeline__t0  .status-bar--flash { animation-delay: 0ms;    animation-play-state: paused; }
+    .timeline__t60 .status-bar--flash { animation-delay: -60ms;  animation-play-state: paused; }
+    .timeline__t120 .status-bar--flash { animation-delay: -120ms; animation-play-state: paused; }
+    .timeline__t180 .status-bar--flash { animation-delay: -180ms; animation-play-state: paused; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>jito ⚡ — Phase 3.3 Status Bar</h1>
+    <div class="meta">
+      Branded status bar · 5 modes × 3 states (idle / streaming / error) ·
+      200ms mode-flash · extension-host + webview mirror
+    </div>
+
+    <!-- ───────────── 1. Idle — all 5 modes ───────────── -->
+    <div class="section">
+      <h2>1. Idle — all 5 modes (gray ⚡, mode caption, neutral bg)</h2>
+      <div class="grid" id="grid-idle"></div>
+    </div>
+
+    <!-- ───────────── 2. Streaming — all 5 modes ───────────── -->
+    <div class="section">
+      <h2>2. Streaming — pulsing ⚡ with mode color glow</h2>
+      <div class="grid" id="grid-streaming"></div>
+    </div>
+
+    <!-- ───────────── 3. Error state ───────────── -->
+    <div class="section">
+      <h2>3. Error — magenta ⚡ with error glyph + danger border</h2>
+      <div class="grid">
+        <div class="cell">
+          <h3>connection lost</h3>
+          <div class="status-bar" data-state="error">
+            <span class="status-bar__bolt status-bar__bolt--error">⚡ ⚠</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">jito: connection lost</span>
+          </div>
+          <div class="label-row">data-state="error" · bolt-shake 1200ms</div>
+        </div>
+        <div class="cell">
+          <h3>api key invalid</h3>
+          <div class="status-bar" data-state="error">
+            <span class="status-bar__bolt status-bar__bolt--error">⚡ ⚠</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">jito: api key invalid</span>
+          </div>
+          <div class="label-row">data-state="error" · bolt-shake 1200ms</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────────── 4. Mode-flash timeline (200ms decay) ───────────── -->
+    <div class="section">
+      <h2>4. Mode-flash timeline — 200ms background pulse on mode change</h2>
+      <div class="timeline">
+        <div class="timeline__cell timeline__t0">
+          <div class="timeline__stamp">t = 0ms</div>
+          <div class="status-bar status-bar--flash" data-state="idle"
+               style="background: var(--mode-active-bg);">
+            <span class="status-bar__bolt">⚡</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">dev</span>
+          </div>
+        </div>
+        <div class="timeline__cell timeline__t60">
+          <div class="timeline__stamp">t = 60ms (peak)</div>
+          <div class="status-bar status-bar--flash" data-state="idle"
+               style="background: var(--mode-active-bg);">
+            <span class="status-bar__bolt">⚡</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">dev</span>
+          </div>
+        </div>
+        <div class="timeline__cell timeline__t120">
+          <div class="timeline__stamp">t = 120ms (fade)</div>
+          <div class="status-bar status-bar--flash" data-state="idle"
+               style="background: var(--mode-active-bg);">
+            <span class="status-bar__bolt">⚡</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">dev</span>
+          </div>
+        </div>
+        <div class="timeline__cell timeline__t180">
+          <div class="timeline__stamp">t = 180ms (cleared)</div>
+          <div class="status-bar status-bar--flash" data-state="idle"
+               style="background: var(--mode-active-bg);">
+            <span class="status-bar__bolt">⚡</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="status-bar__state">dev</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────────── 5. App footer retrofitted ───────────── -->
+    <div class="section">
+      <h2>5. App footer — data-state wiring reference</h2>
+      <div class="pin-stack">
+        <div class="app-footer" data-state="idle">
+          <span class="app-footer__status">
+            <span class="app-footer__bolt">⚡</span>
+            <span>3 messages ·</span>
+            <span class="mode-chip">dev</span>
+          </span>
+          <button class="app-footer__clear">Clear</button>
+        </div>
+        <div class="app-footer app-footer--flash" data-state="idle">
+          <span class="app-footer__status">
+            <span class="app-footer__bolt">⚡</span>
+            <span>3 messages ·</span>
+            <span class="mode-chip">reason</span>
+          </span>
+          <button class="app-footer__clear">Clear</button>
+        </div>
+        <div class="app-footer" data-state="streaming">
+          <span class="app-footer__status">
+            <span class="app-footer__bolt">⚡</span>
+            <span>3 messages ·</span>
+            <span class="mode-chip">create</span>
+          </span>
+          <button class="app-footer__clear">Stop</button>
+        </div>
+        <div class="app-footer" data-state="error">
+          <span class="app-footer__status">
+            <span class="app-footer__bolt">⚡</span>
+            <span>3 messages ·</span>
+            <span class="mode-chip">audit</span>
+          </span>
+          <button class="app-footer__clear">Retry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────────── 6. Story: VS Code chrome vs webview mirror ───────────── -->
+    <div class="section">
+      <h2>6. Story — VS Code chrome + webview mirror</h2>
+      <p style="margin: 0 0 var(--space-3); color: var(--fg-secondary); line-height: var(--leading-normal);">
+        The native VS Code status bar (bottom edge of the editor, rendered by
+        <code>src/status-bar.ts</code>) and the webview footer mirror the same
+        three states — idle, streaming, error — so the user always knows which
+        mode is active regardless of which surface they last looked at.
+        Mode changes trigger a 200ms flash on both sides, ensuring parity.
+      </p>
+      <div class="pin-stack">
+        <div style="background: #0B1220; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: var(--stroke-1) solid #1A1F26; font-family: var(--font-mono); font-size: var(--text-xs); color: #B8C2CC;">
+          <span style="color: #00E5FF;">⚡</span> jito: dev &nbsp;&nbsp;&nbsp;
+          <span style="color: #4A5563;">│</span> &nbsp;
+          <span style="color: #7A8694;">UTF-8</span> &nbsp;&nbsp;
+          <span style="color: #7A8694;">LF</span> &nbsp;&nbsp;
+          <span style="color: #7A8694;">Spaces: 2</span> &nbsp;&nbsp;
+          <span style="color: #7A8694;">TypeScript</span>
+        </div>
+        <div style="background: #0B1220; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: var(--stroke-1) solid #00A3FF66; font-family: var(--font-mono); font-size: var(--text-xs); color: #B8C2CC; box-shadow: inset 0 0 12px #00A3FF33;">
+          <span style="color: #00A3FF;">⏳</span> <span style="color: #00A3FF;">jito: reason · streaming</span> &nbsp;&nbsp;&nbsp;
+          <span style="color: #4A5563;">│</span> &nbsp;
+          <span style="color: #7A8694;">UTF-8</span>
+        </div>
+        <div style="background: #0B1220; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: var(--stroke-1) solid #FF1B6B66; font-family: var(--font-mono); font-size: var(--text-xs); color: #FF1B6B;">
+          <span style="color: #FF1B6B;">⚡</span> <span style="color: #FF1B6B;">⚠</span> jito: connection lost &nbsp;&nbsp;&nbsp;
+          <span style="color: #4A5563;">│</span> &nbsp;
+          <span style="color: #7A8694;">UTF-8</span>
+        </div>
+      </div>
+      <div class="label-row" style="margin-top: var(--space-3);">
+        Mock of the VS Code native status bar — extension host renders these
+        glyphs via codicon references (e.g. <code>$(loading~spin)</code>),
+        not raw HTML, so the geometry here is illustrative only.
+      </div>
+    </div>
+  </div>
+
+  <!-- Populate the dynamic grids (idle + streaming × 5 modes). -->
+  <script>
+    const MODES = [
+      { id: 'dev',       label: 'dev',       bg: '#00A3FF', glow: '#00A3FF33' },
+      { id: 'reason',    label: 'reason',    bg: '#A855F7', glow: '#A855F733' },
+      { id: 'create',    label: 'create',    bg: '#FF1B6B', glow: '#FF1B6B33' },
+      { id: 'audit',     label: 'audit',     bg: '#F97316', glow: '#F9731633' },
+      { id: 'universal', label: 'universal', bg: '#00E5FF', glow: '#00E5FF33' },
+    ];
+
+    const renderCell = (mode, state) => {
+      const stateAttr = state === 'streaming' ? 'streaming' : 'idle';
+      const boltClass = state === 'streaming'
+        ? 'status-bar__bolt status-bar__bolt--streaming'
+        : 'status-bar__bolt';
+      const stateLabel = state === 'streaming' ? 'streaming' : mode.label;
+      const stateTextClass = state === 'streaming'
+        ? 'status-bar__state status-bar__state--streaming'
+        : 'status-bar__state';
+      const note = state === 'streaming'
+        ? `data-state="streaming" · bolt-pulse 600ms · bg ${mode.bg}@20%`
+        : `data-state="idle" · bolt-breathe 4s`;
+      // Override --mode-active-* inline so each card reflects its own
+      // mode color regardless of <html data-mode>. The inline style
+      // emulates what App.tsx does at runtime by setting
+      // <html data-mode={activeMode}>.
+      const inlineVars = `--mode-active-primary: ${mode.bg}; ` +
+                         `--mode-active-fg: ${mode.bg}; ` +
+                         `--mode-active-bg: ${mode.glow};`;
+      return `
+        <div class="cell">
+          <h3>${mode.label}</h3>
+          <div class="status-bar" data-state="${stateAttr}" style="${inlineVars}">
+            <span class="${boltClass}">⚡</span>
+            <span class="status-bar__mode">jito</span>
+            <span class="status-bar__separator">·</span>
+            <span class="${stateTextClass}">${stateLabel}</span>
+          </div>
+          <div class="label-row">${note}</div>
+        </div>`;
+    };
+
+    document.getElementById('grid-idle').innerHTML =
+      MODES.map((m) => renderCell(m, 'idle')).join('');
+    document.getElementById('grid-streaming').innerHTML =
+      MODES.map((m) => renderCell(m, 'streaming')).join('');
+  </script>
+</body>
+</html>
