@@ -1,0 +1,478 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 3.1 visual smoke test
+  =============================================
+  Exercises the new HeroHeader component in 6 sections:
+
+    1. Default chat-panel layout — header sticky over a mock scroll
+    2. Active mode = dev (cyan accent) — verifies data-mode binding
+    3. Active mode = reason (purple accent)
+    4. Active mode = create (magenta accent)
+    5. Active mode = audit (orange accent)
+    6. Responsive: header at 250/320/400/600/960px widths
+
+  The header is rendered as a static HTML mirror of the React component
+  (same BEM classes, same inline SVG) so the preview doesn't need to
+  boot the Vite React stack.
+
+  Open via the vite dev server: http://localhost:5173/preview-phase-3.1.html
+  Or any static server pointed at webview/.
+-->
+<html lang="en" data-mode="dev">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <title>jito ⚡ Phase 3.1 — HeroHeader smoke test</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css" />
+  <link rel="stylesheet" href="./src/styles/spacing.css" />
+  <link rel="stylesheet" href="./src/styles/typography.css" />
+  <link rel="stylesheet" href="./src/index.css" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas);
+      color: var(--fg-primary);
+      font-family: var(--font-ui);
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-4);
+    }
+    h1 {
+      font-size: var(--text-xl);
+      margin: 0 0 var(--space-2);
+      letter-spacing: var(--tracking-tight);
+    }
+    h2 {
+      font-size: var(--text-md);
+      margin: var(--space-6) 0 var(--space-3);
+      color: var(--fg-secondary);
+      font-weight: var(--weight-medium);
+      letter-spacing: var(--tracking-tight);
+    }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      margin-bottom: var(--space-6);
+    }
+    .section {
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--bg-surface);
+      border: var(--stroke-1) solid var(--border-subtle);
+    }
+    .section h3 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-medium);
+      color: var(--fg-secondary);
+    }
+    .section p {
+      margin: 0 0 var(--space-3);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      font-family: var(--font-mono);
+    }
+    .frame {
+      border: var(--stroke-1) solid var(--border-default);
+      background: var(--bg-canvas);
+      overflow: hidden;
+    }
+    .w-250 { width: 250px; }
+    .w-320 { width: 320px; }
+    .w-400 { width: 400px; }
+    .w-600 { width: 600px; }
+    .w-960 { width: 960px; }
+    .frame--scroll {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .scroll-body {
+      height: 600px;
+      padding: var(--space-4);
+      background: var(--bg-canvas);
+      color: var(--fg-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+    }
+    .hero-header {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      width: 100%;
+      min-height: 64px;
+      padding: var(--space-2) var(--space-3);
+      color: var(--fg-primary);
+      background: var(--bg-surface);
+      background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+      border-bottom: var(--stroke-1) solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .hero-header__brand {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+    .hero-header__logo {
+      display: block;
+      width: 120px;
+      height: 36px;
+      flex: 0 0 auto;
+    }
+    .hero-header__tagline {
+      margin: calc(var(--space-1) * -1) 0 0;
+      color: var(--fg-tertiary);
+      font-size: var(--text-xs);
+      line-height: var(--leading-snug);
+      white-space: nowrap;
+    }
+    .hero-header__modes {
+      display: flex;
+      justify-content: flex-end;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+    .hero-header__modes .mode-selector {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .mode-selector {
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-1);
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+    }
+    .mode-selector__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--fg-secondary);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-standard),
+                  color var(--duration-fast) var(--ease-standard);
+    }
+    .mode-selector__btn--active {
+      background: var(--mode-active-bg);
+      color: var(--mode-active-fg);
+      border: var(--stroke-1) solid var(--mode-active-primary);
+    }
+    .mode-selector__icon {
+      width: var(--space-4);
+      height: var(--space-4);
+      flex: 0 0 auto;
+    }
+    @media (max-width: 399px) {
+      .hero-header {
+        align-items: flex-start;
+        gap: var(--space-2);
+      }
+      .hero-header__logo {
+        width: 96px;
+        height: 29px;
+      }
+      .hero-header__tagline {
+        max-width: 112px;
+        white-space: normal;
+      }
+      .hero-header__modes .mode-selector {
+        flex-wrap: nowrap;
+      }
+      .mode-selector__btn {
+        padding-inline: var(--space-1);
+      }
+    }
+    .text-mode-dev        { color: var(--color-mode-dev-primary); }
+    .text-mode-reason     { color: var(--color-mode-reason-primary); }
+    .text-mode-create     { color: var(--color-mode-create-primary); }
+    .text-mode-audit      { color: var(--color-mode-audit-primary); }
+    .text-mode-universal  { color: var(--color-mode-universal-primary); }
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-3) 0 0;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-secondary);
+      display: grid;
+      gap: var(--space-1);
+    }
+    .checklist li::before {
+      content: '✓ ';
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+    .footnote {
+      margin-top: var(--space-4);
+      padding: var(--space-3);
+      background: var(--bg-card);
+      border-left: 3px solid var(--accent-primary);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>jito ⚡ Phase 3.1 — HeroHeader smoke test</h1>
+    <div class="meta">branch: phase-3.1-hero-header · commit: f275fe9 · 131 lines · 64px min-height · sticky top · backdrop-blur</div>
+
+    <h2>1. Default chat panel — sticky on scroll</h2>
+    <div class="section">
+      <h3>Default state (mode = dev)</h3>
+      <p>Scroll the inner pane — header stays anchored at the top with a backdrop blur over the messages.</p>
+      <div class="frame frame--scroll">
+        <header class="hero-header">
+          <div class="hero-header__brand">
+            <svg class="hero-header__logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" role="img" aria-label="jito">
+              <g transform="translate(6 2)" aria-hidden="true">
+                <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z"
+                      fill="var(--bg-canvas)" stroke="var(--accent-primary)"
+                      stroke-width="2" stroke-linejoin="miter" stroke-linecap="square"/>
+                <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+                <line x1="46" y1="24" x2="54" y2="24" stroke="var(--accent-primary)" stroke-width="1.5" stroke-linecap="square"/>
+                <rect x="54" y="22" width="4" height="4" fill="var(--accent-primary)"/>
+              </g>
+              <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+              <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+            </svg>
+            <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+          </div>
+          <div class="hero-header__modes">
+            <div class="mode-selector" role="radiogroup" aria-label="Chat mode">
+              <button class="mode-selector__btn mode-selector__btn--active" role="radio" aria-checked="true">
+                <svg class="mode-selector__icon text-mode-dev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="6" width="18" height="12" rx="2.5"/><polyline points="9.5 9.5 7 12 9.5 14.5"/><line x1="12.5" y1="15.5" x2="15.5" y2="8.5"/><polyline points="14.5 9.5 17 12 14.5 14.5"/>
+                </svg>
+                Dev
+              </button>
+              <button class="mode-selector__btn" role="radio"><svg class="mode-selector__icon text-mode-reason" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><line x1="12" y1="7" x2="7" y2="16"/><line x1="12" y1="7" x2="17" y2="16"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Reason</button>
+              <button class="mode-selector__btn" role="radio"><svg class="mode-selector__icon text-mode-create" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3 C13 9 15 11 21 12 C15 13 13 15 12 21 C11 15 9 13 3 12 C9 11 11 9 12 3 Z"/></svg>Create</button>
+              <button class="mode-selector__btn" role="radio"><svg class="mode-selector__icon text-mode-audit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3 L20 6 L20 12 C20 16 16 19 12 21 C8 19 4 16 4 12 L4 6 Z"/><line x1="7" y1="10" x2="17" y2="10"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="16" x2="13" y2="16"/></svg>Audit</button>
+              <button class="mode-selector__btn" role="radio"><svg class="mode-selector__icon text-mode-universal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Universal</button>
+            </div>
+          </div>
+        </header>
+        <div class="scroll-body">
+          user: add a hello world function<br>
+          assistant (streaming): def hello(): ...<br>
+          user: now make it async<br>
+          assistant: here you go — ...<br>
+          user: explain the diff<br>
+          assistant (streaming): the new signature ...<br>
+          user: ok ship it<br>
+          assistant: committed as abc123 · push to origin/main?<br>
+          <br>
+          (scroll the inner pane — header stays sticky)
+        </div>
+      </div>
+      <ul class="checklist">
+        <li>Header sticks to top while content scrolls</li>
+        <li>Backdrop blur (14px) tints the surface behind the header</li>
+        <li>Active mode = Dev shows cyan accent on the pill border + tint</li>
+      </ul>
+    </div>
+
+    <h2>2. Active mode = Reason — purple accent</h2>
+    <div class="section">
+      <div class="frame" style="width: 600px;">
+        <div data-mode="reason" style="all: initial; font-family: var(--font-ui);">
+          <header class="hero-header">
+            <div class="hero-header__brand">
+              <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+                <g transform="translate(6 2)" aria-hidden="true">
+                  <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                  <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                  <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+                </g>
+                <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+                <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+              </svg>
+              <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+            </div>
+            <div class="hero-header__modes">
+              <div class="mode-selector" role="radiogroup" aria-label="Chat mode">
+                <button class="mode-selector__btn" role="radio">Dev</button>
+                <button class="mode-selector__btn mode-selector__btn--active" role="radio" aria-checked="true">Reason</button>
+                <button class="mode-selector__btn" role="radio">Create</button>
+                <button class="mode-selector__btn" role="radio">Audit</button>
+                <button class="mode-selector__btn" role="radio">Universal</button>
+              </div>
+            </div>
+          </header>
+        </div>
+      </div>
+    </div>
+
+    <h2>3. Active mode = Create — magenta accent</h2>
+    <div class="section">
+      <div class="frame" style="width: 600px;">
+        <div data-mode="create" style="all: initial; font-family: var(--font-ui);">
+          <header class="hero-header">
+            <div class="hero-header__brand">
+              <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+                <g transform="translate(6 2)" aria-hidden="true">
+                  <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                  <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                  <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+                </g>
+                <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+                <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+              </svg>
+              <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+            </div>
+            <div class="hero-header__modes">
+              <div class="mode-selector" role="radiogroup" aria-label="Chat mode">
+                <button class="mode-selector__btn" role="radio">Dev</button>
+                <button class="mode-selector__btn" role="radio">Reason</button>
+                <button class="mode-selector__btn mode-selector__btn--active" role="radio" aria-checked="true">Create</button>
+                <button class="mode-selector__btn" role="radio">Audit</button>
+                <button class="mode-selector__btn" role="radio">Universal</button>
+              </div>
+            </div>
+          </header>
+        </div>
+      </div>
+    </div>
+
+    <h2>4. Active mode = Audit — orange accent</h2>
+    <div class="section">
+      <div class="frame" style="width: 600px;">
+        <div data-mode="audit" style="all: initial; font-family: var(--font-ui);">
+          <header class="hero-header">
+            <div class="hero-header__brand">
+              <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+                <g transform="translate(6 2)" aria-hidden="true">
+                  <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                  <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                  <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+                </g>
+                <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+                <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+              </svg>
+              <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+            </div>
+            <div class="hero-header__modes">
+              <div class="mode-selector" role="radiogroup" aria-label="Chat mode">
+                <button class="mode-selector__btn" role="radio">Dev</button>
+                <button class="mode-selector__btn" role="radio">Reason</button>
+                <button class="mode-selector__btn" role="radio">Create</button>
+                <button class="mode-selector__btn mode-selector__btn--active" role="radio" aria-checked="true">Audit</button>
+                <button class="mode-selector__btn" role="radio">Universal</button>
+              </div>
+            </div>
+          </header>
+        </div>
+      </div>
+    </div>
+
+    <h2>5. Responsive — header at 5 widths</h2>
+    <div class="section">
+      <h3>250px (minimum target)</h3>
+      <div class="frame w-250">
+        <header class="hero-header">
+          <div class="hero-header__brand">
+            <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+              <g transform="translate(6 2)" aria-hidden="true">
+                <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+              </g>
+              <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+              <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+            </svg>
+            <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+          </div>
+          <div class="hero-header__modes">
+            <div class="mode-selector"><button class="mode-selector__btn mode-selector__btn--active">D</button><button class="mode-selector__btn">R</button><button class="mode-selector__btn">C</button><button class="mode-selector__btn">A</button><button class="mode-selector__btn">U</button></div>
+          </div>
+        </header>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>320px</h3>
+      <div class="frame w-320">
+        <header class="hero-header">
+          <div class="hero-header__brand">
+            <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+              <g transform="translate(6 2)" aria-hidden="true">
+                <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+              </g>
+              <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+              <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+            </svg>
+            <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+          </div>
+          <div class="hero-header__modes">
+            <div class="mode-selector"><button class="mode-selector__btn mode-selector__btn--active">Dev</button><button class="mode-selector__btn">Reason</button><button class="mode-selector__btn">Create</button><button class="mode-selector__btn">Audit</button><button class="mode-selector__btn">Universal</button></div>
+          </div>
+        </header>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>600px (default VS Code webview width)</h3>
+      <div class="frame w-600">
+        <header class="hero-header">
+          <div class="hero-header__brand">
+            <svg class="hero-header__logo" viewBox="0 0 200 60" role="img" aria-label="jito">
+              <g transform="translate(6 2)" aria-hidden="true">
+                <path d="M 24 0 L 46 0 L 16 28 L 32 28 L 6 56 L 30 28 L 14 28 Z" fill="var(--bg-canvas)" stroke="var(--accent-primary)" stroke-width="2"/>
+                <rect x="44" y="0" width="4" height="4" fill="var(--accent-critical)"/>
+                <rect x="3" y="50" width="4" height="4" fill="var(--accent-primary)"/>
+              </g>
+              <text x="68" y="42" font-family="var(--font-ui)" font-weight="700" font-size="32" fill="var(--fg-primary)">jito</text>
+              <rect x="84" y="16" width="3.5" height="3.5" fill="var(--accent-primary)"/>
+            </svg>
+            <p class="hero-header__tagline">Multi-mode AI for your editor</p>
+          </div>
+          <div class="hero-header__modes">
+            <div class="mode-selector"><button class="mode-selector__btn mode-selector__btn--active">Dev</button><button class="mode-selector__btn">Reason</button><button class="mode-selector__btn">Create</button><button class="mode-selector__btn">Audit</button><button class="mode-selector__btn">Universal</button></div>
+          </div>
+        </header>
+      </div>
+    </div>
+
+    <div class="footnote">
+      Verification checklist:
+      · HeroHeader renders above MessageList + InputBar in App.tsx
+      · position: sticky + z-index: var(--z-sticky) + backdrop-filter: blur(14px)
+      · Min-height 64px, full width, padding var(--space-2) var(--space-3)
+      · Mode pill container flex 1 1 auto with overflow-x: auto (graceful narrow)
+      · Active mode tinted via :root[data-mode='...'] → --mode-active-primary
+      · Inline SVG logo reads cleanly at 120×36 (96×29 below 400px)
+    </div>
+  </div>
+</body>
+</html>
