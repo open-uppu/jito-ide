@@ -156,7 +156,99 @@
           "group": "jito-ide"
         }
       ]
-    }
+    },
+    "colors": [
+      {
+        "id": "jitoStatusBar.devBackground",
+        "description": "Status bar background tint when dev mode is active.",
+        "defaults": {
+          "light": "#00A3FF33",
+          "dark": "#00A3FF33",
+          "highContrast": "#00A3FF66"
+        }
+      },
+      {
+        "id": "jitoStatusBar.reasonBackground",
+        "description": "Status bar background tint when reason mode is active.",
+        "defaults": {
+          "light": "#A855F733",
+          "dark": "#A855F733",
+          "highContrast": "#A855F766"
+        }
+      },
+      {
+        "id": "jitoStatusBar.createBackground",
+        "description": "Status bar background tint when create mode is active.",
+        "defaults": {
+          "light": "#FF1B6B33",
+          "dark": "#FF1B6B33",
+          "highContrast": "#FF1B6B66"
+        }
+      },
+      {
+        "id": "jitoStatusBar.auditBackground",
+        "description": "Status bar background tint when audit mode is active.",
+        "defaults": {
+          "light": "#F9731633",
+          "dark": "#F9731633",
+          "highContrast": "#F9731666"
+        }
+      },
+      {
+        "id": "jitoStatusBar.universalBackground",
+        "description": "Status bar background tint when universal mode is active.",
+        "defaults": {
+          "light": "#00E5FF33",
+          "dark": "#00E5FF33",
+          "highContrast": "#00E5FF66"
+        }
+      },
+      {
+        "id": "jitoStatusBar.devForeground",
+        "description": "Status bar foreground accent when dev mode is active.",
+        "defaults": {
+          "light": "#00A3FF",
+          "dark": "#00A3FF",
+          "highContrast": "#7CD8FF"
+        }
+      },
+      {
+        "id": "jitoStatusBar.reasonForeground",
+        "description": "Status bar foreground accent when reason mode is active.",
+        "defaults": {
+          "light": "#A855F7",
+          "dark": "#A855F7",
+          "highContrast": "#D8B4FE"
+        }
+      },
+      {
+        "id": "jitoStatusBar.createForeground",
+        "description": "Status bar foreground accent when create mode is active.",
+        "defaults": {
+          "light": "#FF1B6B",
+          "dark": "#FF1B6B",
+          "highContrast": "#FF8AB8"
+        }
+      },
+      {
+        "id": "jitoStatusBar.auditForeground",
+        "description": "Status bar foreground accent when audit mode is active.",
+        "defaults": {
+          "light": "#F97316",
+          "dark": "#F97316",
+          "highContrast": "#FBBF77"
+        }
+      },
+      {
+        "id": "jitoStatusBar.universalForeground",
+        "description": "Status bar foreground accent when universal mode is active.",
+        "defaults": {
+          "light": "#00A3CC",
+          "dark": "#00E5FF",
+          "highContrast": "#7CD8FF"
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
