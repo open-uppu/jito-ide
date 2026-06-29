@@ -1,6 +1,6 @@
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 
-import { ModeSelector } from './ModeSelector';
+import { ModePill } from './ModePill';
 import type { JitoMode } from '../types';
 
 export interface HeroHeaderProps {
@@ -11,6 +11,21 @@ export interface HeroHeaderProps {
   /** Prevents mode changes while the chat panel is busy. */
   disabled?: boolean;
 }
+
+/**
+ * Canonical mode order — drives both the visual layout (left → right) AND
+ * the ArrowLeft / ArrowRight / Home / End navigation between pills.
+ *
+ * Keep this list in lockstep with `MODE_PILL_LABEL` in ModePill.tsx and the
+ * `--color-mode-<m>-*` tokens in styles/tokens.css.
+ */
+const MODE_ORDER: readonly JitoMode[] = [
+  'dev',
+  'reason',
+  'create',
+  'audit',
+  'universal',
+] as const;
 
 interface JitoLogoProps {
   titleId: string;
@@ -108,13 +123,36 @@ function JitoLogo({ titleId }: JitoLogoProps) {
 /**
  * Chat panel hero header for jito-ide v0.2.0.
  *
- * It anchors the brand and active mode controls at the top of the scrolling
- * chat panel. Phase 3.1 keeps using `ModeSelector` inside the mode slot; Phase
- * 3.2 can replace that slot with dedicated `ModePill` components without
- * changing the header's public API.
+ * Phase 3.2 — the mode slot now renders five `<ModePill>` toggles wired into
+ * a `role="radiogroup"` with arrow-key navigation. The Phase 1.1
+ * `<ModeSelector>` is retained only as a back-compat shim that delegates to
+ * `<ModePill>`.
+ *
+ * Keyboard policy for the radiogroup:
+ *   ArrowLeft / ArrowUp    → previous mode (wraps)
+ *   ArrowRight / ArrowDown → next mode (wraps)
+ *   Home                   → first mode
+ *   End                    → last mode
+ *   Enter / Space          → activate focused pill (native <button>)
  */
-export function HeroHeader({ mode, onModeChange, disabled = false }: HeroHeaderProps) {
+export function HeroHeader({
+  mode,
+  onModeChange,
+  disabled = false,
+}: HeroHeaderProps) {
   const logoTitleId = useId();
+  const pillRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  /**
+   * Move the active mode AND focus to the pill at position `target`.
+   * Used by the keyboard-nav handler below.
+   */
+  const focusModeAt = (target: number) => {
+    const wrapped = (target + MODE_ORDER.length) % MODE_ORDER.length;
+    const next = MODE_ORDER[wrapped];
+    onModeChange(next);
+    pillRefs.current[wrapped]?.focus();
+  };
 
   return (
     <header className="hero-header">
@@ -123,8 +161,53 @@ export function HeroHeader({ mode, onModeChange, disabled = false }: HeroHeaderP
         <p className="hero-header__tagline">Multi-mode AI for your editor</p>
       </div>
 
-      <div className="hero-header__modes">
-        <ModeSelector value={mode} onChange={onModeChange} disabled={disabled} />
+      {/*
+       * Phase 3.2 — ModePill radiogroup. Composed directly in HeroHeader so
+       * the keyboard-nav policy (focus management, roving tabindex, mode
+       * change) lives next to the rest of the header state.
+       */}
+      <div
+        role="radiogroup"
+        aria-label="Chat mode"
+        className="hero-header__modes mode-pill-group"
+      >
+        {MODE_ORDER.map((m, i) => (
+          <ModePill
+            key={m}
+            mode={m}
+            active={mode === m}
+            disabled={disabled}
+            tabIndex={mode === m ? 0 : -1}
+            buttonRef={(el) => {
+              pillRefs.current[i] = el;
+            }}
+            onClick={() => onModeChange(m)}
+            onKeyDown={(e) => {
+              switch (e.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                  e.preventDefault();
+                  focusModeAt(i + 1);
+                  return;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                  e.preventDefault();
+                  focusModeAt(i - 1);
+                  return;
+                case 'Home':
+                  e.preventDefault();
+                  focusModeAt(0);
+                  return;
+                case 'End':
+                  e.preventDefault();
+                  focusModeAt(MODE_ORDER.length - 1);
+                  return;
+                default:
+                  return;
+              }
+            }}
+          />
+        ))}
       </div>
     </header>
   );
