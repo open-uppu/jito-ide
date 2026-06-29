@@ -1,20 +1,29 @@
 <!doctype html>
 <!--
-  jito-ide v0.2.0 — Phase 1.1 visual smoke test
+  jito-ide v0.2.0 — Phase 1.2 visual smoke test
   =============================================
-  Pure HTML + our design tokens. No React, no Vite, no Tailwind build.
-  Open this file in any browser to verify:
+  Pure HTML + our design tokens + Geist/Geist Mono fonts. No React, no Vite,
+  no Tailwind build. Open this file in any browser to verify:
     1. Canvas is dark navy (#0A0E14)
     2. Cyan accent on Send button (#00E5FF)
     3. Mode chip swaps color when you click a different mode
     4. Magenta error bubble renders correctly
-  This is the "see cyan accent on button" smoke test the card requires.
+    5. Body text is set in Geist (sans), code blocks in Geist Mono
+  This is the "see cyan accent + Geist typeface" smoke test the card requires.
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>jito ⚡ Phase 1.1 smoke test</title>
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <title>jito ⚡ Phase 1.2 smoke test</title>
   <link rel="stylesheet" href="./src/styles/tokens.css" />
   <link rel="stylesheet" href="./src/styles/spacing.css" />
   <link rel="stylesheet" href="./src/styles/typography.css" />
@@ -99,7 +108,7 @@
 </head>
 <body data-mode="universal">
   <header class="preview-doc">
-    <h1>jito-ide · Phase 1.1 visual smoke test</h1>
+    <h1>jito-ide · Phase 1.2 visual smoke test</h1>
     <p>
       This page is rendered with the production design tokens from
       <code>tokens.css</code> / <code>typography.css</code> / <code>spacing.css</code>
@@ -160,7 +169,7 @@
 
     <footer class="app-footer">
       <span class="tracking-wide uppercase">3 messages · <span class="mode-chip">universal</span></span>
-      <span>jito v0.2.0 · phase 1.1</span>
+      <span>jito v0.2.0 · phase 1.2</span>
     </footer>
   </div>
 
