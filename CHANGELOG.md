@@ -5,6 +5,23 @@ All notable changes to **jito-ide** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added (Phase 5.3 — v0.1.0 User Docs, open beta)
+- `docs/getting-started.md` (NEW, ~146 lines) — install prerequisites (`jito` v0.2.0 binary + Minimax API key), first-run configuration, first chat walkthrough, 5-prompt mode sampler, optional telemetry, full commands/keybinds reference. Mirrors `README.md` quickstart with full narrative.
+- `docs/modes.md` (existing — already user-facing with screenshots, color tokens, and "try asking" examples per mode; no rewrite needed for v0.1.0 doc pass).
+- `docs/file-context.md` (NEW, ~126 lines) — `@file` mention syntax + path resolution rules, sidebar pinning via `jito: Add File to Context`, how pins and `@` mentions compose, limits (binary, folder scope, no globs), 4 worked examples.
+- `docs/slash-commands.md` (NEW, ~166 lines) — full reference for the 5 commands (`/review`, `/test`, `/refactor`, `/doc`, `/explain`), how to invoke via `/`, the toolbar button, or direct typing, mode pairing guidance, composition rules, 3 "in the wild" scenarios.
+- `docs/jito-md.md` (NEW, ~201 lines) — `JITO.md` loader semantics, the `user → workspace → folder` hierarchy, what to put in (and not put in), the loader path is `src/context-loader.ts`, two copy-paste templates (single-service TS lib, multi-service monorepo).
+- `docs/security.md` (NEW, ~178 lines) — full data-flow diagram, storage map (SecretStorage for API key; `workspaceState` for mode + pins; `~/.jito/history.db` for chat), telemetry off-by-default opt-in schema, third-party licenses, threat model table, disclosure policy (`security@uppu.dev`).
+- `docs/troubleshooting.md` (NEW, ~238 lines) — 11 named failure modes (`jito not in PATH`, 401, 429, mode stuck, `@file` resolves nothing, blank webview, status-bar gray, settings won't save, JSON-RPC parse error), 7-item diagnostic checklist before opening an issue.
+- `CONTRIBUTING.md` (NEW, ~293 lines, repo root) — open-beta contribution guide: rules, repo tour, dev workflow, branch/commit conventions, PR template, `[Unreleased]` CHANGELOG entry requirement, label SLAs, anti-patterns to not-PNR-for, MIT licensing note.
+- `README.md` — refreshed Documentation section: groups docs into **user docs** (start here) and **project docs** (contributors); added links to all 7 new docs; license updated to MIT for the open beta.
+
+### Notes
+- No source-code changes; docs-only commit. No protocol/manifest bumps.
+- Phase 5.3 deliverable scope matches card `035b3e4f-f85a-4121-afe5-2c9126fec7db` (v0.1.0 User docs) and the existing Phase 5.3 `phase-5.3-docs-update` PR (#2, merged) by *not* duplicating its README/CHANGELOG/design.md/modes.md work — that PR already shipped.
+
 ## [0.2.0] - in progress
 
 ### Added (Phase 3.4 — MessageCard)
