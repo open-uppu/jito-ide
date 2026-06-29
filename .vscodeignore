@@ -40,6 +40,7 @@ wb-helper.sh.*
 **/*.d.ts
 **/*.d.ts.map
 tsconfig.json
+vitest.config.ts
 
 # Local artefacts
 artifacts/**
