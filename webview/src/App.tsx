@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageList } from './components/MessageList';
 import { InputBar } from './components/InputBar';
-import { ModeSelector } from './components/ModeSelector';
+import { HeroHeader } from './components/HeroHeader';
 import { postToHost } from './lib/vscode';
-import type { JitoMode } from '../types';
+import type { JitoMode } from './types';
 
 export interface ChatMessage {
   id: string;
@@ -70,13 +70,7 @@ export function App() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="app-header">
-        <div className="brand-mark">
-          <span className="brand-mark__bolt" aria-hidden="true">⚡</span>
-          <span>jito</span>
-        </div>
-        <ModeSelector value={mode} onChange={setMode} disabled={busy} />
-      </header>
+      <HeroHeader mode={mode} onModeChange={setMode} disabled={busy} />
       <MessageList messages={messages} onCancel={handleCancel} />
       <InputBar onSend={handleSend} disabled={busy} mode={mode} />
       <footer className="app-footer">

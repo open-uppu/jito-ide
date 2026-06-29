@@ -163,6 +163,64 @@ html, body, #root {
   border-bottom: var(--stroke-1) solid var(--border-subtle);
   background: var(--bg-surface);
 }
+
+.hero-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-2) var(--space-3);
+  color: var(--fg-primary);
+  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  border-bottom: var(--stroke-1) solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.hero-header__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.hero-header__logo {
+  display: block;
+  width: 120px;
+  height: 36px;
+  flex: 0 0 auto;
+}
+
+.hero-header__tagline {
+  margin: calc(var(--space-1) * -1) 0 0;
+  color: var(--fg-tertiary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  white-space: nowrap;
+}
+
+.hero-header__modes {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.hero-header__modes .mode-selector {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .app-footer {
   display: flex;
   justify-content: space-between;
@@ -184,6 +242,9 @@ html, body, #root {
   border-radius: var(--radius-sm);
 }
 .mode-selector__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
   color: var(--fg-secondary);
@@ -204,6 +265,36 @@ html, body, #root {
   border: var(--stroke-1) solid var(--mode-active-primary);
 }
 .mode-selector__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.mode-selector__icon {
+  width: var(--space-4);
+  height: var(--space-4);
+  flex: 0 0 auto;
+}
+
+@media (max-width: 399px) {
+  .hero-header {
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .hero-header__logo {
+    width: 96px;
+    height: 29px;
+  }
+
+  .hero-header__tagline {
+    max-width: 112px;
+    white-space: normal;
+  }
+
+  .hero-header__modes .mode-selector {
+    flex-wrap: nowrap;
+  }
+
+  .mode-selector__btn {
+    padding-inline: var(--space-1);
+  }
+}
 
 /* ---------- Streaming indicator ---------------------------------------- */
 

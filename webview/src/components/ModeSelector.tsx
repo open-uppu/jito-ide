@@ -1,4 +1,5 @@
 import type { JitoMode } from '../types';
+import { ModeIcons } from './icons';
 
 interface Props {
   value: JitoMode;
@@ -6,19 +7,29 @@ interface Props {
   disabled: boolean;
 }
 
-const MODES: { id: JitoMode; label: string; icon: string }[] = [
-  { id: 'dev', label: 'Dev', icon: '⚙️' },
-  { id: 'reason', label: 'Reason', icon: '🧠' },
-  { id: 'create', label: 'Create', icon: '🎨' },
-  { id: 'audit', label: 'Audit', icon: '🛡️' },
-  { id: 'universal', label: 'Universal', icon: '🌐' },
+const MODES: { id: JitoMode; label: string }[] = [
+  { id: 'dev', label: 'Dev' },
+  { id: 'reason', label: 'Reason' },
+  { id: 'create', label: 'Create' },
+  { id: 'audit', label: 'Audit' },
+  { id: 'universal', label: 'Universal' },
 ];
+
+const MODE_ICON_CLASS: Record<JitoMode, string> = {
+  dev: 'text-mode-dev',
+  reason: 'text-mode-reason',
+  create: 'text-mode-create',
+  audit: 'text-mode-audit',
+  universal: 'text-mode-universal',
+};
 
 export function ModeSelector({ value, onChange, disabled }: Props) {
   return (
     <div className="mode-selector" role="radiogroup" aria-label="Chat mode">
       {MODES.map((m) => {
         const active = value === m.id;
+        const Icon = ModeIcons[m.id];
+
         return (
           <button
             key={m.id}
@@ -29,7 +40,10 @@ export function ModeSelector({ value, onChange, disabled }: Props) {
             aria-checked={active}
             className={`mode-selector__btn ${active ? 'mode-selector__btn--active' : ''}`}
           >
-            <span aria-hidden="true" style={{ marginRight: 'var(--space-1)' }}>{m.icon}</span>
+            <Icon
+              className={`mode-selector__icon ${MODE_ICON_CLASS[m.id]}`}
+              aria-hidden="true"
+            />
             {m.label}
           </button>
         );
