@@ -147,12 +147,19 @@
   --text-xl:   24px;
   --text-2xl:  32px;
 
-  /* Radii — sharp/electric. Avoid 8px+ rounding. */
+  /* Radii — sharp/electric. Avoid 8px+ rounding for fine details.
+   * Phase 1.3 introduces SEMANTIC radii for larger surfaces:
+   *   --radius-panel  8px  (side panels, header, mode-selector)
+   *   --radius-card   12px (message bubbles, dialog surfaces)
+   * Fine-grained radii below stay sharp for buttons/inputs.
+   */
   --radius-none: 0;
   --radius-xs:   1px;
   --radius-sm:   2px;   /* buttons, inputs, default */
-  --radius-md:   4px;   /* cards (subtle) */
-  --radius-lg:   6px;   /* modals */
+  --radius-md:   4px;   /* small cards / chips */
+  --radius-lg:   6px;   /* modals (sharp) */
+  --radius-panel: 8px;  /* Phase 1.3 — panels, header, mode-selector shell */
+  --radius-card:  12px; /* Phase 1.3 — message bubbles, larger cards */
   --radius-pill: 999px; /* mode-chip dot (used sparingly) */
 
   /* Strokes */

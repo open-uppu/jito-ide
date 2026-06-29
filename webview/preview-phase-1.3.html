@@ -1,0 +1,226 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 1.3 visual smoke test
+  =============================================
+  Exercises the new Tailwind theme bridge and custom utilities. Open this
+  file via `npm run dev` → http://localhost:5173/preview-phase-1.3.html or
+  any static server pointed at webview/. Verifies:
+
+    1. Tailwind classes resolve from the Phase 1.3 theme:
+         bg-canvas / bg-surface / bg-card / bg-cyan / bg-magenta
+         text-mode-dev / text-mode-reason / text-mode-create / text-mode-audit / text-mode-universal
+         rounded-panel (8px) / rounded-card (12px) / rounded-pill (999px)
+         animate-pulse-glow / animate-slide-up / animate-fade-in
+    2. Custom utilities ship out of the box:
+         .glow-cyan / .glow-magenta / .pulse-mode / .gradient-mode-dev
+    3. Geist + Geist Mono fonts (Phase 1.2) still apply
+    4. Dark canvas + cyan/magenta accents are visible
+-->
+<html lang="en" data-mode="dev">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <title>jito ⚡ Phase 1.3 — Tailwind bridge smoke test</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css" />
+  <link rel="stylesheet" href="./src/styles/spacing.css" />
+  <link rel="stylesheet" href="./src/styles/typography.css" />
+  <link rel="stylesheet" href="./src/index.css" />
+  <style>
+    body { margin: 0; padding: 0; }
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-4);
+    }
+    h1 { font-size: var(--text-xl); margin: 0 0 var(--space-2); }
+    h2 { font-size: var(--text-lg); margin: var(--space-6) 0 var(--space-3); color: var(--fg-secondary); font-weight: var(--weight-medium); }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      margin-bottom: var(--space-6);
+    }
+    .section {
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--bg-surface);
+      border: var(--stroke-1) solid var(--border-subtle);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-3);
+    }
+    .chip {
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      background: var(--bg-card);
+      border: var(--stroke-1) solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    .chip__label { color: var(--fg-tertiary); }
+    .rounded-panel-demo {
+      width: 80px; height: 80px;
+      background: var(--bg-card);
+      border: var(--stroke-1) solid var(--border-default);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-md);
+      font-weight: var(--weight-medium);
+      border: var(--stroke-1) solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--fg-primary);
+      cursor: pointer;
+    }
+    .live-bar {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-surface);
+      border: var(--stroke-1) solid var(--border-subtle);
+      border-radius: var(--radius-panel);
+      align-items: center;
+    }
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: var(--radius-pill);
+    }
+    .dot--cyan    { background: var(--color-jito-cyan); }
+    .dot--dev     { background: var(--color-mode-dev-primary); }
+    .dot--reason  { background: var(--color-mode-reason-primary); }
+    .dot--create  { background: var(--color-mode-create-primary); }
+    .dot--audit   { background: var(--color-mode-audit-primary); }
+    .dot--univ    { background: var(--color-mode-universal-primary); }
+    .dot--magenta { background: var(--color-jito-magenta); }
+  </style>
+</head>
+<body class="bg-canvas text-fg-primary">
+  <div class="wrap">
+
+    <h1>⚡ jito-ide · Phase 1.3 visual smoke test</h1>
+    <div class="meta">
+      Tailwind bridge + custom utilities — dark canvas, cyan + magenta accents.
+    </div>
+
+    <!-- ─────────── 1. Tailwind surface classes (no inline styles) ─────────── -->
+    <h2>1. Surface classes (bg-canvas / bg-surface / bg-card)</h2>
+    <div class="grid">
+      <div class="chip"><div class="dot dot--cyan rounded-pill"></div><div class="chip__label">bg-canvas</div><div style="font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary)">root</div></div>
+      <div class="bg-surface chip" style="padding:var(--space-3)"><div class="chip__label">bg-surface</div><div style="font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary)">panel</div></div>
+      <div class="bg-card chip" style="padding:var(--space-3)"><div class="chip__label">bg-card</div><div style="font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary)">message</div></div>
+      <div class="bg-cyan chip" style="padding:var(--space-3);color:var(--fg-on-accent)"><div class="chip__label">bg-cyan</div><div style="font-family:var(--font-mono);font-size:10px;opacity:.7">#00E5FF</div></div>
+      <div class="bg-magenta chip" style="padding:var(--space-3);color:var(--fg-on-danger)"><div class="chip__label">bg-magenta</div><div style="font-family:var(--font-mono);font-size:10px;opacity:.7">#FF1B6B</div></div>
+    </div>
+
+    <!-- ─────────── 2. Mode colors as text + swatches ─────────── -->
+    <h2>2. Mode palettes (text-mode-dev / text-mode-reason / …)</h2>
+    <div class="section">
+      <div style="display:flex;gap:var(--space-4);flex-wrap:wrap;font-family:var(--font-mono);font-size:var(--text-sm)">
+        <span class="text-mode-dev">text-mode-dev</span>
+        <span class="text-mode-reason">text-mode-reason</span>
+        <span class="text-mode-create">text-mode-create</span>
+        <span class="text-mode-audit">text-mode-audit</span>
+        <span class="text-mode-universal">text-mode-universal</span>
+      </div>
+      <div class="grid" style="margin-top:var(--space-3)">
+        <div class="chip"><div class="dot dot--dev"></div><div>dev #00A3FF</div></div>
+        <div class="chip"><div class="dot dot--reason"></div><div>reason #A855F7</div></div>
+        <div class="chip"><div class="dot dot--create"></div><div>create #FF1B6B</div></div>
+        <div class="chip"><div class="dot dot--audit"></div><div>audit #F97316</div></div>
+        <div class="chip"><div class="dot dot--univ"></div><div>universal #00E5FF</div></div>
+      </div>
+    </div>
+
+    <!-- ─────────── 3. borderRadius: panel 8 / card 12 / pill 999 ─────────── -->
+    <h2>3. borderRadius (panel 8px / card 12px / pill 999px)</h2>
+    <div class="section" style="display:flex;gap:var(--space-4);align-items:flex-end">
+      <div style="text-align:center">
+        <div class="rounded-panel" style="width:80px;height:80px;background:var(--bg-card);border:1px solid var(--border-default)"></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--fg-tertiary);margin-top:var(--space-1)">rounded-panel · 8px</div>
+      </div>
+      <div style="text-align:center">
+        <div class="rounded-card" style="width:80px;height:80px;background:var(--bg-card);border:1px solid var(--border-default)"></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--fg-tertiary);margin-top:var(--space-1)">rounded-card · 12px</div>
+      </div>
+      <div style="text-align:center">
+        <div class="rounded-pill" style="width:80px;height:80px;background:var(--color-mode-create-primary)"></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--fg-tertiary);margin-top:var(--space-1)">rounded-pill · 999px</div>
+      </div>
+    </div>
+
+    <!-- ─────────── 4. Custom utilities: glow + pulse + gradient ─────────── -->
+    <h2>4. Custom utilities (.glow-cyan / .glow-magenta / .pulse-mode / .gradient-mode-dev)</h2>
+    <div class="section" style="display:flex;gap:var(--space-4);flex-wrap:wrap;align-items:center">
+      <div class="glow-cyan" style="width:96px;height:64px;background:var(--bg-card);border-radius:var(--radius-panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--accent-primary)">.glow-cyan</div>
+      <div class="glow-magenta" style="width:96px;height:64px;background:var(--bg-card);border-radius:var(--radius-panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--accent-critical)">.glow-magenta</div>
+      <div class="pulse-mode" style="width:48px;height:48px;background:var(--color-jito-cyan);border-radius:var(--radius-pill)"></div>
+      <div class="gradient-mode-dev" style="width:160px;height:64px;border-radius:var(--radius-panel);display:flex;align-items:center;justify-content:center;color:var(--fg-on-accent);font-family:var(--font-mono);font-size:11px">.gradient-mode-dev</div>
+    </div>
+
+    <!-- ─────────── 5. Animations (animate-fade-in / slide-up / pulse-glow) ─────────── -->
+    <h2>5. Animations (animate-fade-in / animate-slide-up / animate-pulse-glow)</h2>
+    <div class="section">
+      <div class="live-bar animate-fade-in">
+        <span style="color:var(--fg-secondary);font-family:var(--font-mono);font-size:var(--text-xs)">active mode</span>
+        <span class="dot dot--cyan pulse-mode"></span>
+        <span style="color:var(--fg-primary);font-weight:var(--weight-medium)">DEV</span>
+        <span style="color:var(--fg-tertiary);font-family:var(--font-mono);font-size:var(--text-xs);margin-left:auto">→ TypeScript strict · 5 modes</span>
+      </div>
+    </div>
+
+    <!-- ─────────── 6. Compound: panel-surface / card-surface ─────────── -->
+    <h2>6. Compound surfaces (.panel-surface / .card-surface)</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+      <div class="panel-surface" style="padding:var(--space-4)">
+        <div style="font-size:var(--text-md);font-weight:var(--weight-semibold);margin-bottom:var(--space-1)">⚡ Send</div>
+        <div style="color:var(--fg-secondary);font-size:var(--text-sm)">.panel-surface — bg-surface + 8px panel radius</div>
+      </div>
+      <div class="card-surface">
+        <div style="font-size:var(--text-md);font-weight:var(--weight-semibold);margin-bottom:var(--space-1)">📝 Note</div>
+        <div style="color:var(--fg-secondary);font-size:var(--text-sm)">.card-surface — bg-card + 12px card radius</div>
+      </div>
+    </div>
+
+    <!-- ─────────── 7. Live mode switcher (same trick as Phase 1.2) ─────────── -->
+    <h2>7. Live mode switcher (uses data-mode attribute)</h2>
+    <div class="section">
+      <div class="live-bar">
+        <button class="btn" data-mode="dev">Dev</button>
+        <button class="btn" data-mode="reason">Reason</button>
+        <button class="btn" data-mode="create">Create</button>
+        <button class="btn" data-mode="audit">Audit</button>
+        <button class="btn" data-mode="universal">Universal</button>
+        <span class="mode-chip" id="active" style="margin-left:auto">dev</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('[data-mode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const m = btn.getAttribute('data-mode');
+        document.documentElement.setAttribute('data-mode', m);
+        document.getElementById('active').textContent = m;
+      });
+    });
+  </script>
+</body>
+</html>
