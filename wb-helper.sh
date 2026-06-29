@@ -1,13 +1,13 @@
 #!/bin/bash
-# Workboard RPC helper for jito-ide Phase 3.4 (MessageCard) card
+# Workboard RPC helper for jito-ide Phase 6.1 (E2E Smoke Test) card
 # Usage:
 #   wb-heartbeat <note>     # refresh claim heartbeat
 #   wb-complete <summary> <proof>
 #   wb-block <reason>
 set -euo pipefail
 
-CARD_ID="fbf9a739-8079-49a7-823e-aa21dc61bf19"
-TOKEN="78fd2987-4349-46a7-a5f6-8626e28a4fa3"
+CARD_ID="9154e416-4e70-4a0b-bc13-fde147b5db59"
+TOKEN="e81d4ad6-5540-4ad4-b495-70232724dc40"
 GATEWAY="http://127.0.0.1:18789"
 AUTH_TOKEN="8f5708e73dc677c1b357122e21eb8042e556c79efa2d66cd"
 
