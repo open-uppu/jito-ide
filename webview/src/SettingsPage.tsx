@@ -26,7 +26,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { postToHost, vscode } from './lib/vscode';
 import { ModeSelector } from './components/ModeSelector';
-import type { JitoMode } from '../types';
+import type { JitoMode } from './types';
 
 // ──────────────────────────────────────────────────────────────────────
 // Types
