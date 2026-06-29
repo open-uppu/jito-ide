@@ -1,0 +1,171 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 3.4 visual smoke test
+  ==============================================
+  Exercises the new MessageCard component. The preview:
+
+    1. Loads the production-bundled webview (webview/dist/assets/index.js)
+       so the actual React component + CSS tokens ship in the screenshot.
+    2. Mocks acquireVsCodeApi() since we're outside VS Code.
+    3. Sets window.__JITO_VIEW__ = 'chat' so main.tsx routes to <App/>.
+    4. Replies to IPC `history` with a curated set of mock ChatMessage
+       objects covering every MessageCard branch:
+         a. user message — no mode-color stripe, no avatar icon
+         b. assistant message — markdown body + code block + footer
+         c. streaming assistant — raw text, Stop button visible
+         d. finished assistant with usage + latency + contextFiles
+         e. error assistant — magenta stripe, error border
+         f. mode-color variants — dev / reason / create / audit / universal
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>jito ⚡ Phase 3.4 — MessageCard smoke test</title>
+
+  <!-- Mock acquireVsCodeApi BEFORE any bundle loads so the bundle sees it. -->
+  <script>
+    (() => {
+      const mockMessages = [
+        // 1. User message — simple text, no mode metadata.
+        {
+          id: 'msg-1',
+          role: 'user',
+          content: 'How do I set up a Vitest config for a TypeScript monorepo?',
+          timestamp: Date.now() - 1000 * 60 * 4,
+        },
+
+        // 2. Assistant dev mode — markdown body with fenced code block,
+        //    finished with usage + latency + context files.
+        {
+          id: 'msg-2',
+          role: 'assistant',
+          mode: 'dev',
+          content:
+            "Sure — Vitest picks up `vitest.config.ts` from the workspace root. Here's the minimal setup for a pnpm + TS monorepo:\n\n" +
+            '```ts\n' +
+            "import { defineConfig } from 'vitest/config';\n" +
+            "import tsconfigPaths from 'vite-tsconfig-paths';\n\n" +
+            'export default defineConfig({\n' +
+            "  plugins: [tsconfigPaths()],\n" +
+            '  test: {\n' +
+            "    include: ['packages/*/src/**/*.test.ts'],\n" +
+            "    environment: 'node',\n" +
+            '  },\n' +
+            '});\n' +
+            '```\n\n' +
+            'Run `pnpm -r test` from the repo root — the workspace glob picks up every package.',
+          timestamp: Date.now() - 1000 * 60 * 4 + 500,
+          usage: { input_tokens: 312, output_tokens: 184 },
+          contextFiles: ['/repo/vitest.config.ts', '/repo/pnpm-workspace.yaml'],
+          startedAt: Date.now() - 1000 * 60 * 4,
+          endedAt: Date.now() - 1000 * 60 * 4 + 3200,
+        },
+
+        // 3. User follow-up — mentions another file.
+        {
+          id: 'msg-3',
+          role: 'user',
+          content: 'What about coverage thresholds per-package?',
+          timestamp: Date.now() - 1000 * 60 * 2,
+        },
+
+        // 4. Streaming assistant — code block is mid-stream, render as raw text.
+        {
+          id: 'msg-4',
+          role: 'assistant',
+          mode: 'reason',
+          content:
+            "You can do that with `vitest --coverage` plus a per-package config. Here's a snippet that's still streaming in...",
+          timestamp: Date.now() - 1000 * 60 * 1,
+          streaming: true,
+          startedAt: Date.now() - 1000 * 60,
+        },
+
+        // 5. Error assistant — magenta stripe, error border.
+        {
+          id: 'msg-5',
+          role: 'assistant',
+          mode: 'audit',
+          content: '⚠️ Tool `bash` exited with code 1: coverage reporter failed.',
+          timestamp: Date.now() - 1000 * 30,
+          error: true,
+          streaming: false,
+        },
+
+        // 6. Long assistant reply with code + list — finished, no context files.
+        {
+          id: 'msg-6',
+          role: 'assistant',
+          mode: 'create',
+          content:
+            "Here's a reusable test factory for the search box:\n\n" +
+            '- Renders the input\n' +
+            '- Suggests results as you type\n' +
+            '- Handles keyboard navigation\n\n' +
+            '```tsx\n' +
+            'export function renderSearchBox(props: Partial<Props> = {}) {\n' +
+            '  return render(<SearchBox {...defaultProps} {...props} />);\n' +
+            '}\n' +
+            '```\n',
+          timestamp: Date.now() - 1000 * 15,
+          usage: { input_tokens: 412, output_tokens: 96 },
+          startedAt: Date.now() - 1000 * 20,
+          endedAt: Date.now() - 1000 * 18,
+        },
+      ];
+
+      window.__MOCK_MESSAGES__ = mockMessages;
+
+      window.acquireVsCodeApi = () => ({
+        postMessage(msg) {
+          console.log('[mock-vscode] →', msg);
+          if (msg.type === 'clear') {
+            // No-op for the preview.
+          }
+        },
+        getState() { return null; },
+        setState() {},
+      });
+
+      // Inject history AFTER the bundle has subscribed to window.message.
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              data: { type: 'history', payload: mockMessages },
+            })
+          );
+        }, 30);
+      });
+    })();
+
+    // Render the chat view (App.tsx → MessageList → MessageCard).
+    window.__JITO_VIEW__ = 'chat';
+  </script>
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bundle CSS (built by vite → webview/dist/assets/index.css) -->
+  <link rel="stylesheet" href="./dist/assets/index.css" />
+
+  <style>
+    body { margin: 0; padding: 0; background: var(--bg-canvas); color: var(--fg-primary); }
+    .preview-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+  <div id="root" class="preview-shell"></div>
+  <!-- Production bundle (vite build → webview/dist/assets/index.js).
+       Contains React + App + MessageList + MessageCard in 1399 modules. -->
+  <script src="./dist/assets/index.js"></script>
+</body>
+</html>
