@@ -1,0 +1,482 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 2.2 visual smoke test
+  =============================================
+  Exercises the 5 mode-icon SVG React components. Renders each icon in:
+    - All 5 mode colors at 24px (default chip size)
+    - Size strip 12/16/24/32/48 to verify scaling
+    - Mono on light + dark backgrounds (theming sanity)
+    - Active vs inactive state (mode-selector context)
+    - Pixel-perfect detail (8× zoom of primary row)
+
+  Open via the vite dev server: http://localhost:5173/preview-phase-2.2.html
+  (Or any static server pointed at webview/.)
+-->
+<html lang="en" data-mode="dev">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <title>jito ⚡ Phase 2.2 — Mode Icons smoke test</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css" />
+  <link rel="stylesheet" href="./src/styles/spacing.css" />
+  <link rel="stylesheet" href="./src/styles/typography.css" />
+  <link rel="stylesheet" href="./src/index.css" />
+
+  <!-- Phase 2.2 inlined SVG icon strings (mirrors the TSX geometry verbatim
+       so the preview doesn't need to bundle React). The TSX components
+       render the same paths; this preview is purely a visual check. -->
+  <style>
+    body { margin: 0; padding: 0; }
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-4);
+    }
+    h1 { font-size: var(--text-xl); margin: 0 0 var(--space-2); }
+    h2 {
+      font-size: var(--text-lg);
+      margin: var(--space-6) 0 var(--space-3);
+      color: var(--fg-secondary);
+      font-weight: var(--weight-medium);
+    }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--fg-tertiary);
+      margin-bottom: var(--space-6);
+    }
+    .section {
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--bg-surface);
+      border: var(--stroke-1) solid var(--border-subtle);
+    }
+    .section--light {
+      background: #F5F5F4;
+      color: #0B1220;
+      border-color: #DDD;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-3);
+    }
+    .grid--5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-3);
+    }
+    .cell {
+      padding: var(--space-3);
+      background: var(--bg-card);
+      border: var(--stroke-1) solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+    }
+    .cell--light {
+      background: #FFFFFF;
+      border-color: #E5E5E5;
+      color: #0B1220;
+    }
+    .cell__label { color: var(--fg-tertiary); }
+    .cell--light .cell__label { color: #6B7280; }
+    .cell__name {
+      font-weight: var(--weight-medium);
+      color: var(--fg-primary);
+    }
+    .cell--light .cell__name { color: #0B1220; }
+
+    /* Mode color utilities (mirror what Tailwind emits). */
+    .text-mode-dev        { color: var(--color-mode-dev-primary); }
+    .text-mode-reason     { color: var(--color-mode-reason-primary); }
+    .text-mode-create     { color: var(--color-mode-create-primary); }
+    .text-mode-audit      { color: var(--color-mode-audit-primary); }
+    .text-mode-universal  { color: var(--color-mode-universal-primary); }
+
+    /* Active state pill — emulates a selected mode chip. */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      border-radius: var(--radius-pill);
+      background: var(--bg-card);
+      border: var(--stroke-1) solid var(--border-subtle);
+      color: var(--fg-secondary);
+    }
+    .pill--active {
+      background: var(--bg-raised);
+      border-color: currentColor;
+      color: var(--mode-active-primary);
+      box-shadow: 0 0 8px color-mix(in oklab, currentColor 30%, transparent);
+    }
+    .size-strip {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-4);
+      padding: var(--space-3);
+    }
+    .size-strip__item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--fg-tertiary);
+    }
+    .icon-zoom {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      padding: var(--space-3);
+      background: var(--bg-canvas);
+      border: var(--stroke-1) solid var(--border-subtle);
+    }
+    .icon-zoom svg {
+      width: 96px;
+      height: 96px;
+    }
+    .icon-grid-line {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      padding: var(--space-2);
+      background-image:
+        linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-fg-primary">
+  <div class="wrap">
+
+    <h1>⚡ jito-ide · Phase 2.2 visual smoke test</h1>
+    <div class="meta">
+      Mode icons — 5 SVG React components, 24×24 viewBox, stroke 1.5, currentColor.
+    </div>
+
+    <!-- ===== Section 1 — Icon set, mode-color theming ===== -->
+    <section class="section">
+      <h2>1. All 5 icons in their mode color (24px)</h2>
+      <div class="grid--5">
+        <div class="cell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="24" height="24">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <div class="cell__name">DevIcon</div>
+          <div class="cell__label">cyan · </> chip</div>
+        </div>
+
+        <div class="cell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-reason" width="24" height="24">
+            <line x1="12" y1="4.5" x2="6" y2="17" />
+            <line x1="12" y1="4.5" x2="18" y2="17" />
+            <line x1="6" y1="17" x2="18" y2="17" />
+            <circle cx="12" cy="4.5" r="2.25" />
+            <circle cx="6" cy="17" r="2.25" />
+            <circle cx="18" cy="17" r="2.25" />
+          </svg>
+          <div class="cell__name">ReasonIcon</div>
+          <div class="cell__label">purple · φ graph</div>
+        </div>
+
+        <div class="cell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-create" width="24" height="24">
+            <path d="M12 3 C 13 9 15 11 21 12 C 15 13 13 15 12 21 C 11 15 9 13 3 12 C 9 11 11 9 12 3 Z" />
+          </svg>
+          <div class="cell__name">CreateIcon</div>
+          <div class="cell__label">magenta · ✨</div>
+        </div>
+
+        <div class="cell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-audit" width="24" height="24">
+            <path d="M12 3 L20 6 L20 12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 L4 6 Z" />
+            <line x1="6.5" y1="11" x2="17.5" y2="11" />
+            <line x1="6.5" y1="14" x2="17.5" y2="14" />
+            <line x1="8" y1="17" x2="16" y2="17" />
+          </svg>
+          <div class="cell__name">AuditIcon</div>
+          <div class="cell__label">orange · 🛡 scan</div>
+        </div>
+
+        <div class="cell">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-universal" width="24" height="24">
+            <circle cx="12" cy="12" r="8.5" />
+          </svg>
+          <div class="cell__name">UniversalIcon</div>
+          <div class="cell__label">cyan · ◯ ring</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 2 — Size scaling strip (using Dev as a sample) ===== -->
+    <section class="section">
+      <h2>2. Size scaling strip (DevIcon, 12/16/24/32/48)</h2>
+      <div class="size-strip">
+        <div class="size-strip__item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="12" height="12">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <span>12px</span>
+        </div>
+        <div class="size-strip__item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="16" height="16">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <span>16px (chip)</span>
+        </div>
+        <div class="size-strip__item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="24" height="24">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <span>24px (default)</span>
+        </div>
+        <div class="size-strip__item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="32" height="32">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <span>32px</span>
+        </div>
+        <div class="size-strip__item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="48" height="48">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <span>48px (hero)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 3 — Active state (mode selector chips) ===== -->
+    <section class="section">
+      <h2>3. Mode-selector chips (active vs inactive)</h2>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <div class="pill pill--active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          Dev
+        </div>
+        <div class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <line x1="12" y1="4.5" x2="6" y2="17" />
+            <line x1="12" y1="4.5" x2="18" y2="17" />
+            <line x1="6" y1="17" x2="18" y2="17" />
+            <circle cx="12" cy="4.5" r="2.25" />
+            <circle cx="6" cy="17" r="2.25" />
+            <circle cx="18" cy="17" r="2.25" />
+          </svg>
+          Reason
+        </div>
+        <div class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <path d="M12 3 C 13 9 15 11 21 12 C 15 13 13 15 12 21 C 11 15 9 13 3 12 C 9 11 11 9 12 3 Z" />
+          </svg>
+          Create
+        </div>
+        <div class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <path d="M12 3 L20 6 L20 12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 L4 6 Z" />
+            <line x1="6.5" y1="11" x2="17.5" y2="11" />
+            <line x1="6.5" y1="14" x2="17.5" y2="14" />
+            <line x1="8" y1="17" x2="16" y2="17" />
+          </svg>
+          Audit
+        </div>
+        <div class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <circle cx="12" cy="12" r="8.5" />
+          </svg>
+          Universal
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 4 — Light background sanity (mono icons) ===== -->
+    <section class="section section--light">
+      <h2 style="color: #1F2937;">4. Mono icons on light background (foreground = #0B1220)</h2>
+      <div class="grid--5">
+        <div class="cell cell--light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <polyline points="9.5 9.5 7 12 9.5 14.5" />
+            <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+            <polyline points="14.5 9.5 17 12 14.5 14.5" />
+          </svg>
+          <div class="cell__name">Dev</div>
+          <div class="cell__label">stroke #0B1220</div>
+        </div>
+        <div class="cell cell--light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <line x1="12" y1="4.5" x2="6" y2="17" />
+            <line x1="12" y1="4.5" x2="18" y2="17" />
+            <line x1="6" y1="17" x2="18" y2="17" />
+            <circle cx="12" cy="4.5" r="2.25" />
+            <circle cx="6" cy="17" r="2.25" />
+            <circle cx="18" cy="17" r="2.25" />
+          </svg>
+          <div class="cell__name">Reason</div>
+          <div class="cell__label">stroke #0B1220</div>
+        </div>
+        <div class="cell cell--light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <path d="M12 3 C 13 9 15 11 21 12 C 15 13 13 15 12 21 C 11 15 9 13 3 12 C 9 11 11 9 12 3 Z" />
+          </svg>
+          <div class="cell__name">Create</div>
+          <div class="cell__label">stroke #0B1220</div>
+        </div>
+        <div class="cell cell--light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <path d="M12 3 L20 6 L20 12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 L4 6 Z" />
+            <line x1="6.5" y1="11" x2="17.5" y2="11" />
+            <line x1="6.5" y1="14" x2="17.5" y2="14" />
+            <line x1="8" y1="17" x2="16" y2="17" />
+          </svg>
+          <div class="cell__name">Audit</div>
+          <div class="cell__label">stroke #0B1220</div>
+        </div>
+        <div class="cell cell--light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <circle cx="12" cy="12" r="8.5" />
+          </svg>
+          <div class="cell__name">Universal</div>
+          <div class="cell__label">stroke #0B1220</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 5 — Pixel-detail zoom (8×) ===== -->
+    <section class="section">
+      <h2>5. 8× zoom — verify stroke consistency, alignment, padding</h2>
+      <div class="icon-zoom">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="96" height="96">
+          <rect x="3" y="6" width="18" height="12" rx="2.5" />
+          <polyline points="9.5 9.5 7 12 9.5 14.5" />
+          <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+          <polyline points="14.5 9.5 17 12 14.5 14.5" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-reason" width="96" height="96">
+          <line x1="12" y1="4.5" x2="6" y2="17" />
+          <line x1="12" y1="4.5" x2="18" y2="17" />
+          <line x1="6" y1="17" x2="18" y2="17" />
+          <circle cx="12" cy="4.5" r="2.25" />
+          <circle cx="6" cy="17" r="2.25" />
+          <circle cx="18" cy="17" r="2.25" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-create" width="96" height="96">
+          <path d="M12 3 C 13 9 15 11 21 12 C 15 13 13 15 12 21 C 11 15 9 13 3 12 C 9 11 11 9 12 3 Z" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-audit" width="96" height="96">
+          <path d="M12 3 L20 6 L20 12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 L4 6 Z" />
+          <line x1="6.5" y1="11" x2="17.5" y2="11" />
+          <line x1="6.5" y1="14" x2="17.5" y2="14" />
+          <line x1="8" y1="17" x2="16" y2="17" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-universal" width="96" height="96">
+          <circle cx="12" cy="12" r="8.5" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- ===== Section 6 — Grid overlay (verifies viewBox alignment) ===== -->
+    <section class="section">
+      <h2>6. Grid overlay (8px) — viewBox alignment sanity check</h2>
+      <div class="icon-grid-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-dev" width="96" height="96">
+          <rect x="3" y="6" width="18" height="12" rx="2.5" />
+          <polyline points="9.5 9.5 7 12 9.5 14.5" />
+          <line x1="12.5" y1="15.5" x2="15.5" y2="8.5" />
+          <polyline points="14.5 9.5 17 12 14.5 14.5" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-reason" width="96" height="96">
+          <line x1="12" y1="4.5" x2="6" y2="17" />
+          <line x1="12" y1="4.5" x2="18" y2="17" />
+          <line x1="6" y1="17" x2="18" y2="17" />
+          <circle cx="12" cy="4.5" r="2.25" />
+          <circle cx="6" cy="17" r="2.25" />
+          <circle cx="18" cy="17" r="2.25" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-create" width="96" height="96">
+          <path d="M12 3 C 13 9 15 11 21 12 C 15 13 13 15 12 21 C 11 15 9 13 3 12 C 9 11 11 9 12 3 Z" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-audit" width="96" height="96">
+          <path d="M12 3 L20 6 L20 12 C20 16.5 16.5 19.5 12 21 C7.5 19.5 4 16.5 4 12 L4 6 Z" />
+          <line x1="6.5" y1="11" x2="17.5" y2="11" />
+          <line x1="6.5" y1="14" x2="17.5" y2="14" />
+          <line x1="8" y1="17" x2="16" y2="17" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" class="text-mode-universal" width="96" height="96">
+          <circle cx="12" cy="12" r="8.5" />
+        </svg>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>
