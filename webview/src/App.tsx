@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageList } from './components/MessageList';
-import { InputBar } from './components/InputBar';
+import { Composer } from './components/Composer';
 import { ModeSelector } from './components/ModeSelector';
 import { postToHost } from './lib/vscode';
 import type { JitoMode } from './types';
@@ -142,7 +142,7 @@ export function App() {
         <ModeSelector value={mode} onChange={setMode} disabled={busy} />
       </header>
       <MessageList messages={messages} onCancel={handleCancel} />
-      <InputBar onSend={handleSend} disabled={busy} mode={mode} />
+      <Composer onSend={handleSend} disabled={busy} mode={mode} />
       <footer className="app-footer">
         <span className="tracking-wide uppercase">
           {messages.length} messages · <span className="mode-chip">{mode}</span>
