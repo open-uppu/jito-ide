@@ -1,0 +1,25 @@
+name: release
+triggers: ['push', 'workflow_dispatch', 'pull_request']
+matrix cells: 5
+
+MATRIX (5 builds, per card spec):
+----------------------------------------------------------------------
+#   label          runner                 target        
+----------------------------------------------------------------------
+1   linux-x64      ubuntu-latest          linux-x64     
+2   linux-arm64    ubuntu-24.04-arm       linux-arm64   
+3   darwin-x64     macos-13               darwin-x64    
+4   darwin-arm64   macos-latest           darwin-arm64  
+5   win32-x64      windows-latest         win32-x64     
+----------------------------------------------------------------------
+
+publish job defined: True
+permissions.contents: write
+concurrency group: release-${{ github.ref }}
+
+VALIDATION SUMMARY:
+  ✓ 3 OS (ubuntu/macos/windows) × 2 arch (x64/arm64) - 1 (win-arm64) = 5 cells
+  ✓ Windows arm64 omitted per card spec
+  ✓ pull_request trigger so matrix is visible before merge
+  ✓ tag push triggers full matrix + publish + GH Release
+  ✓ workflow_dispatch for manual build-only runs
