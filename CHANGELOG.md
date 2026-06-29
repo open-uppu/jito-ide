@@ -5,6 +5,25 @@ All notable changes to **jito-ide** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - in progress
+
+### Added (Phase 1.3 — Tailwind Theme Config)
+- `webview/tailwind.config.js` — flat top-level brand colors (`bg-canvas`,
+  `text-cyan`, `bg-magenta`), `mode.*` palettes with `DEFAULT` aliases so
+  `text-mode-dev` works out of the box, `borderRadius.panel` (8px) and
+  `borderRadius.card` (12px), animations `pulse-glow` / `slide-up` /
+  `fade-in` at 60–120 ms ease-out, `fontFamily.sans` / `mono` / `display`
+  bound to Phase 1.2 Geist stacks.
+- `webview/src/styles/utilities.css` — `.glow-cyan`, `.glow-magenta`,
+  `.pulse-mode`, `.gradient-mode-{dev,reason,create,audit,universal}`,
+  `.text-glow-{cyan,magenta}`, plus compound `.panel-surface` (8px) and
+  `.card-surface` (12px). Classes ship outside `@layer utilities` to avoid
+  Tailwind content-scan purge.
+- `webview/src/styles/tokens.css` — new semantic radius tokens
+  `--radius-panel` (8px) and `--radius-card` (12px).
+- `webview/preview-phase-1.3.html` — visual smoke test exercising every
+  new class (Tailwind bridge + custom utilities).
+
 ## [0.1.0] - 2026-06-29 (kickoff)
 
 ### Added
