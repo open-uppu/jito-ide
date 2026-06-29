@@ -15,7 +15,7 @@ const SLASH_COMMANDS = [
   { cmd: '/explain', desc: 'Explain code' },
 ];
 
-export function InputBar({ onSend, disabled }: Props) {
+export function InputBar({ onSend, disabled, mode }: Props) {
   const [text, setText] = useState('');
   const [showCommands, setShowCommands] = useState(false);
 
@@ -43,35 +43,62 @@ export function InputBar({ onSend, disabled }: Props) {
   };
 
   return (
-    <div className="border-t border-white/10 p-2 relative">
+    <div
+      style={{
+        borderTop: 'var(--stroke-1) solid var(--border-subtle)',
+        padding: 'var(--space-2)',
+        position: 'relative',
+      }}
+    >
       {showCommands && (
-        <div className="absolute bottom-full left-2 right-2 mb-1 bg-zinc-800 rounded shadow-lg border border-white/10 max-h-48 overflow-y-auto">
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: 'var(--space-2)',
+            right: 'var(--space-2)',
+            marginBottom: 'var(--space-1)',
+            background: 'var(--bg-raised)',
+            borderRadius: 'var(--radius-sm)',
+            boxShadow: 'var(--shadow-md)',
+            border: 'var(--stroke-1) solid var(--border-default)',
+            maxHeight: 'var(--space-12)',
+            overflowY: 'auto',
+          }}
+        >
           {SLASH_COMMANDS.map((c) => (
             <button
               key={c.cmd}
               onClick={() => insertCommand(c.cmd)}
-              className="block w-full text-left px-3 py-2 hover:bg-white/10"
+              className="block w-full text-left hover:bg-white/5"
+              style={{
+                padding: 'var(--space-2) var(--space-3)',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--fg-primary)',
+                cursor: 'pointer',
+              }}
             >
               <div className="font-mono text-sm">{c.cmd}</div>
-              <div className="text-xs opacity-70">{c.desc}</div>
+              <div className="text-xs" style={{ color: 'var(--fg-tertiary)' }}>{c.desc}</div>
             </button>
           ))}
         </div>
       )}
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Ask jito…  (Enter to send, Shift+Enter for newline, / for commands)"
+          placeholder={`Ask jito in ${mode} mode…  (Enter to send, Shift+Enter for newline, / for commands)`}
           disabled={disabled}
           rows={2}
-          className="flex-1 bg-white/5 rounded px-2 py-1.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="input-chat"
         />
         <button
           onClick={handleSend}
           disabled={disabled || !text.trim()}
-          className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-sm font-medium"
+          className="btn-send"
         >
           {disabled ? '...' : 'Send'}
         </button>
