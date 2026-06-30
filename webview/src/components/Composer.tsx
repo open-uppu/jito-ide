@@ -1,13 +1,14 @@
 import {
   useState,
   useRef,
-  useEffect,
   useLayoutEffect,
   useCallback,
   type KeyboardEvent,
   type ChangeEvent,
 } from 'react';
 import type { JitoMode } from '../types';
+import { SlashPalette } from './SlashPalette';
+import type { SlashCommand } from '../lib/commands';
 
 /**
  * Composer — Phase 4.1 redesign of the chat input bar.
@@ -41,15 +42,8 @@ interface Props {
   mode: JitoMode;
 }
 
-// Single source of truth for slash commands — mirrors the original InputBar
-// surface so the toolbar button can re-open the same palette.
-const SLASH_COMMANDS: { cmd: string; desc: string }[] = [
-  { cmd: '/review', desc: 'Review code for issues' },
-  { cmd: '/test', desc: 'Generate tests' },
-  { cmd: '/refactor', desc: 'Refactor selected code' },
-  { cmd: '/doc', desc: 'Generate documentation' },
-  { cmd: '/explain', desc: 'Explain code' },
-];
+// Slash command definitions now live in `../lib/commands.ts` (Phase 4.2)
+// and are rendered by the `<SlashPalette />` component.
 
 const MAX_LINES = 12;
 const LINE_HEIGHT_PX = 20; // matches --leading-tight × --text-md in tokens.css
@@ -136,17 +130,8 @@ export function Composer({ onSend, disabled, mode }: Props) {
 
   // Click-outside closes the palette (the toolbar button toggles it back on).
   const surfaceRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!showCommands) return;
-    const handler = (ev: MouseEvent) => {
-      if (!surfaceRef.current) return;
-      if (!surfaceRef.current.contains(ev.target as Node)) {
-        setShowCommands(false);
-      }
-    };
-    window.addEventListener('mousedown', handler);
-    return () => window.removeEventListener('mousedown', handler);
-  }, [showCommands]);
+  // Phase 4.2: click-outside is handled by SlashPalette itself
+  // (it owns the open-state lifecycle and ignores hits inside `anchorRef`).
 
   // ---- Toolbar handlers ------------------------------------------------
   const openCommands = useCallback(() => {
@@ -167,6 +152,19 @@ export function Composer({ onSend, disabled, mode }: Props) {
     textareaRef.current?.focus();
   }, []);
 
+  // Phase 4.2 — SlashPalette callbacks. `handlePaletteSelect` inserts the
+  // chosen command's label (e.g. "/review ") into the textarea; we keep
+  // `insertCommand` around for any future inline caller that hands us a
+  // raw string.
+  const handlePaletteSelect = useCallback((cmd: SlashCommand) => {
+    insertCommand(cmd.label);
+  }, [insertCommand]);
+
+  const handlePaletteClose = useCallback(() => {
+    setShowCommands(false);
+    textareaRef.current?.focus();
+  }, []);
+
   // ---- Derived state ----------------------------------------------------
   const charCount = text.length;
   const trimmedEmpty = text.trim().length === 0;
@@ -180,23 +178,13 @@ export function Composer({ onSend, disabled, mode }: Props) {
       className={`composer ${isFocused ? 'composer--focused' : ''}`}
       data-mode={mode}
     >
-      {/* Slash-command palette — overlays the toolbar from above. */}
+      {/* Slash-command palette — Phase 4.2: pops above the composer. */}
       {showCommands && (
-        <div className="composer__palette" role="listbox" aria-label="Slash commands">
-          {SLASH_COMMANDS.map((c) => (
-            <button
-              key={c.cmd}
-              type="button"
-              role="option"
-              aria-selected="false"
-              onClick={() => insertCommand(c.cmd)}
-              className="composer__palette-item"
-            >
-              <span className="composer__palette-cmd">{c.cmd}</span>
-              <span className="composer__palette-desc">{c.desc}</span>
-            </button>
-          ))}
-        </div>
+        <SlashPalette
+          onSelect={handlePaletteSelect}
+          onClose={handlePaletteClose}
+          anchorRef={surfaceRef}
+        />
       )}
 
       {/* Toolbar — sits above the textarea inside the composer surface. */}

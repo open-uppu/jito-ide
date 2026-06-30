@@ -39,6 +39,7 @@
 
   /* Status (semantic primitives) */
   --color-success: #4ADE80;
+  --color-success-bg: #4ADE801A; /* Phase 4.2 — paired bg for success, mirrors --color-mode-*-bg pattern */
   --color-warning: #FBBF24;
   --color-danger:  #FF1B6B;  /* aliased to magenta */
   --color-info:    #00E5FF;  /* aliased to cyan */
