@@ -1,0 +1,441 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 5.2 visual smoke test (LAUNCH ASSETS)
+  =============================================================
+  One preview HTML driving four screenshot scenes used by the Phase 5.2
+  smoke harness (smoke-phase-5.2.mjs). The scene is selected by URL:
+    ?scene=chat                  → empty chat panel with hero header
+    ?scene=modes                 → mode switcher in active state
+    ?scene=slash                 → slash palette open with /test selected
+    ?scene=settings              → SettingsPage with all 6 sections
+    ?scene=og-banner             → standalone social card (1200x630)
+
+  Common: loads production-bundled webview so the actual React + CSS tokens
+  ship in the screenshot. Mocks acquireVsCodeApi() since we run outside VS Code.
+
+  Open: just open in a browser. For headless screenshots:
+    node assets/smoke-phase-5.2.mjs
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jito ⚡ Phase 5.2 — Launch assets smoke test</title>
+
+  <!-- Parse scene BEFORE bundle so the mock + viewer can react. -->
+  <script>
+    (function parseScene() {
+      const params = new URLSearchParams(window.location.search);
+      const scene = params.get('scene') || 'chat';
+      window.__SCENE__ = scene;
+      window.__JITO_VIEW__ = scene === 'settings' ? 'settings' : 'chat';
+
+      // Mock prefix hooks used by the chat App's vscode-adapter.
+      // We expose helpers so the puppeteer harness can drive state changes
+      // (e.g. open the slash palette, mark a command as selected, etc.)
+      window.__MOCK__ = {
+        mode: params.get('mode') || 'dev',
+        paletteOpen: params.get('palette') === '1',
+        paletteFocusedIdx: parseInt(params.get('focusIdx') || '-1', 10),
+        messages: null, // set later if needed
+        fire(data) {
+          const ev = new MessageEvent('message', { data });
+          window.dispatchEvent(ev);
+        },
+      };
+
+      // Phase 5.2 — skip the OnboardingModal on screenshot scenes where it
+      // would otherwise block the chat panel. Settings + og-banner ignore it.
+      if (params.get('skipOnboarding') === '1' || scene === 'settings' || scene === 'og-banner') {
+        try { localStorage.setItem('jito-onboarding-seen', 'v0.2.0'); } catch {}
+      }
+    })();
+
+    // Mock acquireVsCodeApi BEFORE any bundle loads so the bundle sees it.
+    (function mockVsCodeApi() {
+      const fire = (data) => {
+        const ev = new MessageEvent('message', { data });
+        window.dispatchEvent(ev);
+      };
+      window.acquireVsCodeApi = function () {
+        return {
+          postMessage(msg) {
+            console.log('[mock-vscode] →', msg);
+            if (msg.type === 'send') {
+              // Echo the user message back so App flips busy=true / adds the
+              // user bubble / streams an assistant reply.
+              const userText = (msg.payload && msg.payload.text) || '';
+              const userMode = (msg.payload && msg.payload.mode) || window.__MOCK__.mode;
+              const userId = 'u-' + Date.now();
+              fire({
+                type: 'message',
+                payload: {
+                  id: userId,
+                  role: 'user',
+                  content: userText,
+                  mode: userMode,
+                  timestamp: Date.now(),
+                },
+              });
+              // Open an assistant stream
+              const assistantId = 'a-' + Date.now();
+              const startedAt = Date.now() + 50;
+              setTimeout(
+                () =>
+                  fire({
+                    type: 'messageUpdate',
+                    payload: { id: assistantId, content: '', streaming: true, startedAt },
+                  }),
+                100,
+              );
+              const reply =
+                "Here's a starter sketch — let me know which path you want to drill into:\n\n1. " +
+                "Add a **structured `JitoAgentOpts`** type and wire it into the `spawn()` call.\n" +
+                "2. Persist `mode` per project in `~/.jito/agents.json` so we can default by repo.\n" +
+                "3. Surface the active mode as a chip in the **status bar** + `kbd Ctrl+M` cycle.\n\n" +
+                'Want me to draft the patch for option 3?';
+              let i = 0;
+              const step = Math.max(2, Math.floor(reply.length / 60));
+              const interval = setInterval(() => {
+                i = Math.min(reply.length, i + step);
+                const done = i >= reply.length;
+                fire({
+                  type: 'messageUpdate',
+                  payload: {
+                    id: assistantId,
+                    content: reply.slice(0, i),
+                    streaming: !done,
+                    endedAt: done ? Date.now() : undefined,
+                    usage: done ? { input_tokens: 87, output_tokens: 142 } : undefined,
+                  },
+                });
+                if (done) clearInterval(interval);
+              }, 35);
+            }
+          },
+          getState() { return null; },
+          setState() {},
+        };
+      };
+    })();
+  </script>
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bundle CSS (built by vite → webview/dist/assets/index.css) -->
+  <link rel="stylesheet" href="./dist/assets/index.css" />
+
+  <style>
+    /* Reset so the page matches VS Code's webview background (--bg-canvas). */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas, #0B1220);
+      color: var(--fg-primary, #E6F7FB);
+      font-family: var(--font-ui, Geist, Inter, system-ui, sans-serif);
+    }
+    /* For OG banner — fixed 1200x630 canvas, isolated from window resize. */
+    body.og-banner {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+    }
+    /* Hero gradient underlay used for the chat scene so it pops on social cards.
+       We only add it for the chat/modes/slash scenes; settings & OG have their own. */
+    body[data-scene-bg="hero"] {
+      background:
+        radial-gradient(1200px 600px at 75% -20%, rgba(0, 229, 255, 0.10), transparent 60%),
+        radial-gradient(900px 500px at 10% 110%, rgba(255, 46, 146, 0.08), transparent 60%),
+        var(--bg-canvas);
+    }
+    /* OG banner — top-level layout div, controlled 1200x630 stage. */
+    #og-stage {
+      width: 1200px;
+      height: 630px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+      padding: 64px 72px;
+      box-sizing: border-box;
+      position: relative;
+      background:
+        radial-gradient(900px 600px at 110% -10%, rgba(0, 229, 255, 0.18), transparent 55%),
+        radial-gradient(700px 400px at -5% 110%, rgba(255, 46, 146, 0.20), transparent 55%),
+        linear-gradient(180deg, #0B1220 0%, #0F1A2E 100%);
+      color: #E6F7FB;
+      overflow: hidden;
+      font-family: Geist, Inter, system-ui, sans-serif;
+    }
+    #og-stage::before {
+      /* faint grid */
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 48px 48px,
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 48px 48px;
+      pointer-events: none;
+    }
+    #og-stage__left {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    #og-stage__brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-weight: 700;
+      font-size: 56px;
+      letter-spacing: -0.02em;
+    }
+    #og-stage__bolt {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #00E5FF 0%, #FF2E92 100%);
+      box-shadow: 0 12px 40px rgba(0, 229, 255, 0.45), 0 0 80px rgba(255, 46, 146, 0.35);
+      color: #0B1220;
+      font-size: 44px;
+      line-height: 1;
+    }
+    #og-stage__tagline {
+      font-size: 26px;
+      line-height: 1.35;
+      color: #C2D6F0;
+      max-width: 540px;
+    }
+    #og-stage__tagline b { color: #E6F7FB; font-weight: 600; }
+    #og-stage__modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .og-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #E6F7FB;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .og-chip--dev        { background: rgba(127,86,217,0.18); border-color: rgba(127,86,217,0.45); }
+    .og-chip--reason     { background: rgba(0,229,255,0.16); border-color: rgba(0,229,255,0.45); }
+    .og-chip--create     { background: rgba(255,46,146,0.16); border-color: rgba(255,46,146,0.45); }
+    .og-chip--audit      { background: rgba(245,166,35,0.16); border-color: rgba(245,166,35,0.45); }
+    .og-chip--universal  { background: rgba(143,163,194,0.16); border-color: rgba(143,163,194,0.40); }
+    #og-stage__url {
+      position: absolute;
+      bottom: 36px;
+      left: 72px;
+      font-size: 18px;
+      color: #8FA3C2;
+      letter-spacing: 0.02em;
+      font-family: 'Geist Mono', monospace;
+    }
+    #og-stage__right {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    #og-stage__panel {
+      width: 460px;
+      height: 460px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #142544 0%, #0F1A2E 100%);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(0, 229, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #og-stage__panel header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+    }
+    #og-stage__panel header .mark {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, #00E5FF 0%, #FF2E92 100%);
+      display: grid; place-items: center;
+      color: #0B1220; font-size: 18px; font-weight: 700;
+    }
+    #og-stage__panel header .name {
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    #og-stage__panel header .url {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      color: #8FA3C2;
+    }
+    #og-stage__panel .msgs {
+      flex: 1;
+      padding: 18px;
+      display: flex; flex-direction: column; gap: 12px;
+      overflow: hidden;
+    }
+    .og-msg {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .og-msg.user {
+      align-self: flex-end;
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: #E6F7FB;
+    }
+    .og-msg.assistant {
+      align-self: flex-start;
+      background: rgba(127, 86, 217, 0.18);
+      border: 1px solid rgba(127, 86, 217, 0.42);
+      color: #E6F7FB;
+    }
+    .og-msg .role {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #8FA3C2;
+      margin-bottom: 4px;
+      display: block;
+    }
+    #og-stage__panel .composer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.02);
+    }
+    #og-stage__panel .composer .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #00E5FF;
+      box-shadow: 0 0 10px #00E5FF;
+    }
+    #og-stage__panel .composer .pill {
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(127, 86, 217, 0.25);
+      border: 1px solid rgba(127, 86, 217, 0.50);
+      font-size: 12px;
+    }
+    #og-stage__panel .composer .placeholder {
+      flex: 1;
+      color: #8FA3C2;
+      font-size: 13px;
+    }
+
+    /* Webview mount root sized for chat scenes (1100x900 @ 2x = 2200x1800). */
+    #root {
+      width: 1100px;
+      height: 900px;
+    }
+
+    /* Phase 5.2 — Highlight an item as "selected" inside the slash palette
+       (the production bundle only uses aria-selected; the smoke harness
+       also adds this class for a visible highlight in the screenshot). */
+    .composer__palette-item--selected {
+      background: var(--state-hover-bg, rgba(0, 229, 255, 0.10));
+      box-shadow: inset 2px 0 0 var(--accent-primary, #00E5FF);
+    }
+    /* Settings scene needs full viewport. */
+    body[data-scene="settings"] #root {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body class="" data-scene="">
+  <!-- Two possible mount points: the React chat/settings views mount into #root;
+       the og-banner scene swaps in #og-stage in lieu of React. -->
+  <div id="root" style="height: 100vh;"></div>
+  <div id="og-stage" style="display: none;">
+    <div id="og-stage__left">
+      <div id="og-stage__brand">
+        <span id="og-stage__bolt" aria-hidden="true">⚡</span>
+        <span>jito</span>
+      </div>
+      <div id="og-stage__tagline">
+        The open-source, multi-mode AI agent IDE.<br/>
+        <b>5 first-class modes</b> — Dev, Reason, Create, Audit, Universal.<br/>
+        Powered by <b>Minimax-M3</b>. Free &amp; local-first.
+      </div>
+      <div id="og-stage__modes">
+        <span class="og-chip og-chip--dev">⚙️ Dev</span>
+        <span class="og-chip og-chip--reason">🧠 Reason</span>
+        <span class="og-chip og-chip--create">🎨 Create</span>
+        <span class="og-chip og-chip--audit">🛡️ Audit</span>
+        <span class="og-chip og-chip--universal">🌐 Universal</span>
+      </div>
+    </div>
+    <div id="og-stage__right">
+      <div id="og-stage__panel" aria-hidden="true">
+        <header>
+          <span class="mark">⚡</span>
+          <span class="name">jito</span>
+          <span class="url" style="margin-left:auto;">github.com/open-uppu/jito-ide</span>
+        </header>
+        <div class="msgs">
+          <div class="og-msg user">
+            <span class="role">you</span>
+            Refactor this file so it reads top-down and add inline comments where intent isn't obvious.
+          </div>
+          <div class="og-msg assistant">
+            <span class="role">assistant · dev</span>
+            Sure — split the loader into 3 pure functions, hoist the threshold constant, and inline-doc the
+            retry/backoff contract…
+          </div>
+        </div>
+        <div class="composer">
+          <span class="dot"></span>
+          <span class="pill">⚙️ Dev</span>
+          <span class="placeholder">Ask jito in dev mode…</span>
+        </div>
+      </div>
+    </div>
+    <div id="og-stage__url">github.com/open-uppu/jito-ide</div>
+  </div>
+
+  <!-- Phase 5.2 — Apply scene-driven layout BEFORE the React bundle mounts. -->
+  <script>
+    (function applyScene() {
+      const scene = window.__SCENE__;
+      document.body.setAttribute('data-scene', scene);
+      // Layout: og-banner gets a fixed 1200x630 stage, others use webview root.
+      if (scene === 'og-banner') {
+        document.getElementById('root').style.display = 'none';
+        const og = document.getElementById('og-stage');
+        og.style.display = 'grid';
+        document.body.classList.add('og-banner');
+        return;
+      }
+      if (scene === 'settings') {
+        document.getElementById('og-stage').style.display = 'none';
+        return;
+      }
+      // Chat scenes (chat/modes/slash) — apply hero gradient backdrop.
+      document.body.setAttribute('data-scene-bg', 'hero');
+      document.getElementById('og-stage').style.display = 'none';
+    })();
+  </script>
+
+  <!-- Production bundle (vite build → webview/dist/assets/index.js). -->
+  <script src="./dist/assets/index.js"></script>
+</body>
+</html>

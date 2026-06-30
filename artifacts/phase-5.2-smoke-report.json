@@ -1,0 +1,56 @@
+{
+  "phase": "5.2 — Screenshots + GIF demo (launch assets)",
+  "branch": "phase-5.2-launch-assets",
+  "commit": "TBD",
+  "date": "2026-06-30",
+  "deliverables": {
+    "assets/screenshots/chat.png": {
+      "size_bytes": 92603,
+      "size_human": "90.4 KB",
+      "viewport": "1100x800 @ 2x",
+      "description": "Empty chat panel with hero header (brand mark, 5-mode selector, empty state hero)",
+      "assertions": ["brand-mark present", "composer visible"]
+    },
+    "assets/screenshots/modes.png": {
+      "size_bytes": 10821,
+      "size_human": "10.6 KB",
+      "viewport": "1100x900 @ 2x, clipped to 3 modes",
+      "description": "Mode switcher in active state — crops Dev | Reason | Create with Dev highlighted",
+      "assertions": ["exactly 1 active mode button"]
+    },
+    "assets/screenshots/slash.png": {
+      "size_bytes": 79360,
+      "size_human": "77.5 KB",
+      "viewport": "1100x800 @ 2x, clipped to palette + composer area",
+      "description": "Slash palette open with all 5 commands (/review, /test, /refactor, /doc, /explain) and /test selected",
+      "assertions": ["palette has 5 commands"]
+    },
+    "assets/screenshots/settings.png": {
+      "size_bytes": 325632,
+      "size_human": "317.8 KB",
+      "viewport": "1000x1300 @ 2x, full-page",
+      "description": "SettingsPage with all 6 sections: API Key, Model, Default Mode, Telemetry, Theme, About",
+      "assertions": ["6 settings-card sections present"]
+    },
+    "assets/og-banner.png": {
+      "size_bytes": 594944,
+      "size_human": "580.6 KB",
+      "viewport": "1200x630 @ 2x (2400x1260 PNG)",
+      "description": "Social card with jito ⚡ brand, tagline, all 5 modes, GitHub URL, mock chat preview",
+      "assertions": ["1200x630 CSS pixels", "5 mode chips present"]
+    },
+    "assets/demo.gif": {
+      "size_bytes": 1897837,
+      "size_human": "1.85 MB",
+      "duration_seconds": 30.01,
+      "frame_count": 240,
+      "fps": 8,
+      "description": "30s animated demo: empty → type → switch mode → slash palette → /refactor → stream → audit mode → verdict → next message",
+      "assertions": ["≤ 5 MB", "≥ 50 KB sanity"]
+    }
+  },
+  "smoke_assertions": "15/15 passed",
+  "console_errors": 0,
+  "harness": "assets/smoke-phase-5.2.mjs",
+  "preview_html": "webview/preview-phase-5.2.html"
+}
