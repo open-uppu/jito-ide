@@ -69,3 +69,15 @@ Thumbs.db
 #   assets/ (icons, logos, svg)
 #   out/ (compiled extension)
 #   webview/dist/ (built webview UI)
+
+# Worker helper scripts (should NEVER ship — they contain internal PATs and credentials)
+wb-helper*.sh
+
+# Publish/ docs/ CI artefacts (large, not needed at runtime)
+publish/**
+webview/dist-prod/**
+coverage/**
+vitest.config.ts
+
+# Local dev convenience
+package-lock.json
