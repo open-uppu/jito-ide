@@ -5,6 +5,64 @@ All notable changes to **jito-ide** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-30 — Open beta
+
+**First public release on the VS Marketplace** 🎉
+
+This is the version you'll see when you search "jito ide" in the VS Marketplace
+extension panel. Install with `code --install-extension uppu.jito-ide` or via the
+Marketplace UI.
+
+### What ships
+
+- **Streaming chat panel** with markdown + syntax highlighting
+- **5 first-class modes** — dev / reason / create / audit / universal — each with its
+  own system prompt, tool set, status-bar tint, and slash commands
+- **`@filename` file context** — jito reads the file before answering
+- **`JITO.md` loader** — hierarchical project context (like `.cursorrules`)
+- **Slash commands** — `/review`, `/test`, `/refactor` (TOML-defined, easy to extend)
+- **Encrypted credentials** — API key in VS Code SecretStorage (never on disk plaintext)
+- **Local-first** — your code never leaves your machine unless you opt in
+- **Status bar** with mode tint + token count + animated streaming indicator
+- **Hero header** with logo + tagline + mode pills
+- **Composer** with multi-line input + keyboard shortcuts (`Cmd/Ctrl+Enter` to send)
+
+### Reliability
+
+- Webview test suite: **36/36 passing**, coverage 100% lines / 94.81% branches
+- Protocol test suite: 14/14 passing
+- Smoke test: 10/10 success across all 5 modes (mock provider)
+- Cross-platform VSIX verified on linux/macos/windows × x64/arm64 (6-job CI matrix)
+
+### Licensing
+
+- **MIT** license (`LICENSE`, `package.json` `license: "MIT"`)
+- Up until today the repo used a "Private — uppu internal use only" placeholder,
+  which is illegal public-license boilerplate and would be rejected by the
+  marketplace validator. See PR #6.
+
+### Known limitations (deferred to v0.3.0)
+
+- No `Ctrl+K` inline edit yet
+- No conversation history persistence (each session starts fresh)
+- No multi-file selection via UI
+
+### How to install
+
+1. Open VS Code
+2. Extensions panel → search "jito ide"
+3. Click **Install**
+4. Open the jito sidebar → set your Minimax API key (or any OpenAI-compatible endpoint)
+5. `Ctrl+Shift+P` → "jito: Open Chat"
+
+### Links
+
+- Marketplace: https://marketplace.visualstudio.com/items?itemName=uppu.jito-ide
+- Source: https://github.com/open-uppu/jito-ide
+- Docs: https://ide.jito.dev
+- Discussions: https://github.com/open-uppu/jito-ide/discussions
+- Issues: https://github.com/open-uppu/jito-ide/issues
+
 ## [Unreleased]
 
 ### Added (Phase 5.3 — v0.1.0 User Docs, open beta)
