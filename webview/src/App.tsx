@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageList } from './components/MessageList';
 import { Composer } from './components/Composer';
 import { ModeSelector } from './components/ModeSelector';
+import { Onboarding } from './components/Onboarding';
 import { postToHost } from './lib/vscode';
 import type { JitoMode } from './types';
 
@@ -132,29 +133,34 @@ export function App() {
     postToHost('clear');
   };
 
+  const handleOnboardingComplete = useCallback(() => {}, []);
+
   return (
-    <div className="flex flex-col h-screen">
-      <header className="app-header">
-        <div className="brand-mark">
-          <span className="brand-mark__bolt" aria-hidden="true">⚡</span>
-          <span>jito</span>
-        </div>
-        <ModeSelector value={mode} onChange={setMode} disabled={busy} />
-      </header>
-      <MessageList messages={messages} onCancel={handleCancel} />
-      <Composer onSend={handleSend} disabled={busy} mode={mode} />
-      <footer className="app-footer">
-        <span className="tracking-wide uppercase">
-          {messages.length} messages · <span className="mode-chip">{mode}</span>
-        </span>
-        <button
-          onClick={handleClear}
-          className="hover:opacity-100 opacity-60"
-          style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}
-        >
-          Clear
-        </button>
-      </footer>
-    </div>
+    <>
+      <Onboarding onComplete={handleOnboardingComplete} />
+      <div className="flex flex-col h-screen">
+        <header className="app-header">
+          <div className="brand-mark">
+            <span className="brand-mark__bolt" aria-hidden="true">⚡</span>
+            <span>jito</span>
+          </div>
+          <ModeSelector value={mode} onChange={setMode} disabled={busy} />
+        </header>
+        <MessageList messages={messages} onCancel={handleCancel} />
+        <Composer onSend={handleSend} disabled={busy} mode={mode} />
+        <footer className="app-footer">
+          <span className="tracking-wide uppercase">
+            {messages.length} messages · <span className="mode-chip">{mode}</span>
+          </span>
+          <button
+            onClick={handleClear}
+            className="hover:opacity-100 opacity-60"
+            style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            Clear
+          </button>
+        </footer>
+      </div>
+    </>
   );
 }
