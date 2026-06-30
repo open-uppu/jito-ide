@@ -49,7 +49,7 @@ import {
   CATEGORY_ORDER,
   commands as ALL_COMMANDS,
   filterCommands,
-} from '../lib/commands';
+} from '../lib/commands.tsx';
 
 interface Props {
   /** Called when the user picks a command (Enter or click). */
@@ -204,8 +204,14 @@ export function SlashPalette({ onSelect, onClose, anchorRef }: Props) {
   );
 
   /* ---- Stop the textarea's keydown from re-firing ------------------- */
+  // We swallow most keys so the textarea behind the palette never sees
+  // them. Escape is the one exception — it must bubble up to the palette
+  // root so the close-on-Escape handler fires.
   const swallow = useCallback(
-    (e: ReactKeyboardEvent<HTMLInputElement>) => e.stopPropagation(),
+    (e: ReactKeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Escape') return; // let Escape bubble to the palette root
+      e.stopPropagation();
+    },
     [],
   );
 

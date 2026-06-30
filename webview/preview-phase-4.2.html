@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 4.2 visual smoke test (SlashPalette)
+  ============================================================
+  Renders the full chat App and auto-opens the new SlashPalette on top of
+  the Composer. The puppeteer harness drives these visual states by:
+    - typing in the palette search box        → filter
+    - hovering rows / pressing arrow keys     → active row + preview update
+    - pressing Escape                        → close palette
+
+  Open in a browser to see it; for headless screenshots:
+    node assets/smoke-phase-4.2.mjs
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jito ⚡ Phase 4.2 — SlashPalette smoke test</title>
+
+  <!-- Mock acquireVsCodeApi BEFORE any bundle loads. -->
+  <script>
+    (() => {
+      const fire = (data) => {
+        const ev = new MessageEvent('message', { data });
+        window.dispatchEvent(ev);
+      };
+      window.__MOCK_FIRE__ = fire;
+      window.acquireVsCodeApi = () => ({
+        postMessage(msg) {
+          console.log('[mock-vscode] →', msg);
+          if (msg.type === 'send') {
+            fire({
+              type: 'message',
+              payload: {
+                id: 'mock-' + Date.now(),
+                role: 'user',
+                content: msg.payload && msg.payload.text ? msg.payload.text : '',
+                timestamp: Date.now(),
+              },
+            });
+          }
+        },
+        getState() { return null; },
+        setState() {},
+      });
+      window.__JITO_VIEW__ = 'chat';
+    })();
+  </script>
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bundle CSS (built by vite → webview/dist/assets/index.css) -->
+  <link rel="stylesheet" href="./dist/assets/index.css" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas);
+      color: var(--fg-primary);
+      font-family: var(--font-ui);
+    }
+  </style>
+</head>
+<body>
+  <div id="root" style="height: 100vh;"></div>
+  <!-- Production bundle (vite build → webview/dist/assets/index.js). -->
+  <script src="./dist/assets/index.js"></script>
+  <script>
+    // Auto-open the palette once the React app has mounted so the smoke
+    // harness can snap it without simulating clicks.
+    (() => {
+      const tryOpen = () => {
+        const slashBtn = document.querySelector('.composer__tool-btn[aria-label="Open slash commands"]');
+        if (slashBtn) {
+          slashBtn.click();
+        } else {
+          setTimeout(tryOpen, 100);
+        }
+      };
+      setTimeout(tryOpen, 400);
+    })();
+  </script>
+</body>
+</html>

@@ -244,15 +244,17 @@ html, body, #root {
 
 .palette {
   position: absolute;
-  /* Anchor above the composer surface (Composer.tsx owns position:relative). */
+  /* Anchor above the composer surface (Composer.tsx owns position:relative).
+   * Fixed 400px width per Phase 4.2 spec; left-aligned with space-3 inset
+   * so it doesn't overhang the textarea. Falls back to a max-width when the
+   * composer surface itself is narrower than the palette. */
   bottom: calc(100% + var(--space-1));
   left: var(--space-3);
-  right: var(--space-3);
   z-index: 20;
   display: flex;
   flex-direction: column;
-  width: auto;
-  max-width: 100%;
+  width: 400px;
+  max-width: calc(100% - var(--space-3) * 2);
   max-height: 480px;
   overflow: hidden;
   font-family: var(--font-ui);
