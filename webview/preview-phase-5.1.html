@@ -1,0 +1,64 @@
+<!doctype html>
+<!--
+  jito-ide v0.2.0 — Phase 5.1 visual smoke test (Onboarding tour)
+  ===============================================================
+  Renders the full chat App with the first-run Onboarding modal mounted
+  on top. Lets the puppeteer harness drive the tour through every step:
+
+    1. Welcome  → jito logo + tagline
+    2. Pick mode → 5 mode chips
+    3. Add file → mock composer with attached file chip
+    4. Slash cmds → list of /review /test /refactor /doc
+
+  Usage:
+    open preview-phase-5.1.html in a browser
+    OR  headless via assets/smoke-phase-5.1.mjs (click Next/Skip, screenshot)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jito ⚡ Phase 5.1 — Onboarding smoke test</title>
+
+  <!-- Mock acquireVsCodeApi BEFORE any bundle loads so the bundle sees it. -->
+  <script>
+    (() => {
+      // Clear onboarding flag on every load so the tour re-appears.
+      try { localStorage.removeItem('jito-onboarding-seen'); } catch {}
+      window.__MOCK_FIRE__ = (data) => {
+        const ev = new MessageEvent('message', { data });
+        window.dispatchEvent(ev);
+      };
+      window.acquireVsCodeApi = () => ({
+        postMessage(msg) { console.log('[mock-vscode] →', msg); },
+        getState() { return null; },
+        setState() {},
+      });
+      window.__JITO_VIEW__ = 'chat';
+    })();
+  </script>
+
+  <!-- Phase 1.2 — Geist + Geist Mono via Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bundle CSS (built by vite → webview/dist/assets/index.css) -->
+  <link rel="stylesheet" href="./dist/assets/index.css" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas);
+      color: var(--fg-primary);
+      font-family: var(--font-ui);
+    }
+  </style>
+</head>
+<body>
+  <div id="root" style="height: 100vh;"></div>
+  <!-- Production bundle (vite build → webview/dist/assets/index.js). -->
+  <script src="./dist/assets/index.js"></script>
+</body>
+</html>

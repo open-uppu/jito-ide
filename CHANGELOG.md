@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Phase 5.1 — Onboarding, first-run tour)
+- `webview/src/components/Onboarding.tsx` (NEW, 278 lines) — 4-step modal tour (Welcome → Pick mode → Add files → Slash commands). Backdrop blur + centered 480px card + Skip/Back/Next/Get-started buttons + animated step dots. Stores `jito-onboarding-seen` flag in localStorage keyed by version (`v0.2.0`) so upgrade paths re-show the tour. Focus-trap, Escape-to-skip, backdrop-click-to-skip, `prefers-reduced-motion` honored. ARIA: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`.
+- `webview/src/components/Onboarding.test.tsx` (NEW, 98 lines) — 8 vitest cases: gate respects version flag, no-flag render, upgrade re-render (`v0.1.0` → show), advance-through-all-4, completion writes flag + calls `onComplete`, skip writes flag + calls `onSkip`, Escape dismisses, Back navigation.
+- `webview/preview-phase-5.1.html` (NEW) + `assets/smoke-phase-5.1.mjs` (NEW) — puppeteer headless smoke harness; captures 4 step screenshots + skip + persisted-after-reload. 12/12 assertions pass, 0 console errors.
+- `webview/src/index.css` — appended `.onboarding-*` family (~310 lines): backdrop, card chrome, header/footer, body copy, step visuals (logo, mode chips, mock composer, slash-cmd list), primary/ghost button variants, dot indicator, reduced-motion guard.
+- `webview/src/App.tsx` — mounted `<Onboarding />` at top of return tree; uses internal storage gate so first-run detection stays self-contained inside the component.
+
+### Notes
+- Phase 5.1 deliverable scope matches card `2821b546-02eb-4fa9-af43-78bee9d94e7a`. Blocks 6.1 (E2E).
+- All 44 webview unit tests pass (8 new + 36 existing). `npm run build` clean.
+
 ### Added (Phase 5.3 — v0.1.0 User Docs, open beta)
 - `docs/getting-started.md` (NEW, ~146 lines) — install prerequisites (`jito` v0.2.0 binary + Minimax API key), first-run configuration, first chat walkthrough, 5-prompt mode sampler, optional telemetry, full commands/keybinds reference. Mirrors `README.md` quickstart with full narrative.
 - `docs/modes.md` (existing — already user-facing with screenshots, color tokens, and "try asking" examples per mode; no rewrite needed for v0.1.0 doc pass).
