@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Phase 5.2 — Launch assets: screenshots + GIF demo + OG banner)
+- `assets/screenshots/chat.png` (NEW, ~90 KB, 2200×1600 @ 2x) — empty chat panel + hero header; brand mark ⚡jito, 5-mode selector (Dev active), hero empty state with bolt emoji, composer at bottom, footer with `DEV` chip. Used as the open-beta chat panel hero.
+- `assets/screenshots/modes.png` (NEW, ~11 KB, 524×150 @ 2x, clipped to 3 modes) — mode switcher in active state; crops `Dev | Reason | Create` with Dev highlighted (cyan border). Tighter read than a full-panel screenshot.
+- `assets/screenshots/slash.png` (NEW, ~78 KB, 2264×714 @ 2x) — slash palette open over the composer; all 5 commands (`/review`, `/test`, `/refactor`, `/doc`, `/explain`) visible with `/test` selected (cyan left bar + hover bg). Composer toolbar / textarea / Send row visible.
+- `assets/screenshots/settings.png` (NEW, ~318 KB, 2000×2884 @ 2x, full-page) — SettingsPage with all 6 sections: API Key (SecretStorage), Model (Minimax-M3), Default Mode (5 chips), Telemetry (opt-in), Theme (Dark/Light/System), About (v0.2.0 card). Footer with Save / Discard / Restore defaults.
+- `assets/og-banner.png` (NEW, ~581 KB, 2400×1260 @ 2x — 1200×630 CSS) — social card. Left: ⚡jito brand mark (cyan→magenta gradient), tagline, 5 mode chips. Right: mock chat preview (user → Dev assistant reply). GitHub URL pinned bottom-left. Cyan + magenta radial gradients + faint grid backdrop.
+- `assets/demo.gif` (NEW, ~1.85 MB, 30.01 s, 240 frames @ 8 fps, 1100×800) — animated demo loop. Sequence: empty chat → type → switch to Dev → open slash palette → select `/refactor` → user bubble appears → assistant reply streams (3 stages) → switch to Audit → user asks for security scan → final verdict message → next message. Loops 20× for ~30 s total. Well under the 5 MB embed constraint.
+- `webview/preview-phase-5.2.html` (NEW) — multi-scene preview driving all four PNG scenes. Mocks `acquireVsCodeApi`, exposes `window.__MOCK__.fire()` so the puppeteer harness can drive state changes; sets `localStorage.jito-onboarding-seen=v0.2.0` when `?skipOnboarding=1` so the chat/modes/slash scenes show the chat panel instead of the Phase 5.1 tour. Bundle CSS + JS loaded from the production `dist/` so screenshots reflect the shipped React components.
+- `assets/smoke-phase-5.2.mjs` (NEW) — headless puppeteer harness. Captures all four PNGs (with explicit clip rectangles for the `modes.png` 3-mode crop and the `slash.png` palette-above-composer overlay), generates the OG banner from the inline `#og-stage` layout (1200×630), and stitches the demo GIF via a two-pass ffmpeg call (`palettegen` + `paletteuse`) with `-stream_loop` to repeat the 12-frame sequence 20×. 15/15 assertions pass, 0 console errors.
+- `artifacts/phase-5.2-smoke-report.json` (NEW) — machine-readable run report (deliverable sizes, durations, assertion counts).
+
+### Notes
+- Phase 5.2 unblocks: **5.3 (Docs)** uses these screenshots in `docs/modes.md` + `README.md`; **6.2 (VSIX package)** will reference `og-banner.png` for the marketplace gallery banner.
+- Visual direction matches the brand tokens: dark canvas (`#0B1220` / `#0F1A2E`), per-mode accents (cyan / violet / pink / amber / mint), Real messages (loader.ts refactor + audit verdict), @2x device pixel ratio for Retina.
+- Demo GIF is 1.85 MB — comfortably under the 5 MB blog-embed ceiling.
+
 ### Added (Phase 5.1 — Onboarding, first-run tour)
 - `webview/src/components/Onboarding.tsx` (NEW, 278 lines) — 4-step modal tour (Welcome → Pick mode → Add files → Slash commands). Backdrop blur + centered 480px card + Skip/Back/Next/Get-started buttons + animated step dots. Stores `jito-onboarding-seen` flag in localStorage keyed by version (`v0.2.0`) so upgrade paths re-show the tour. Focus-trap, Escape-to-skip, backdrop-click-to-skip, `prefers-reduced-motion` honored. ARIA: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`.
 - `webview/src/components/Onboarding.test.tsx` (NEW, 98 lines) — 8 vitest cases: gate respects version flag, no-flag render, upgrade re-render (`v0.1.0` → show), advance-through-all-4, completion writes flag + calls `onComplete`, skip writes flag + calls `onSkip`, Escape dismisses, Back navigation.
