@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MessageList } from './components/MessageList';
-import { InputBar } from './components/InputBar';
+import { Composer } from './components/Composer';
 import { HeroHeader } from './components/HeroHeader';
 import { postToHost } from './lib/vscode';
 import type { JitoMode } from './types';

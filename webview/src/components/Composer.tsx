@@ -8,7 +8,7 @@ import {
 } from 'react';
 import type { JitoMode } from '../types';
 import { SlashPalette } from './SlashPalette';
-import type { SlashCommand } from '../lib/commands';
+import type { SlashCommand } from '../lib/commands.tsx';
 
 /**
  * Composer — Phase 4.1 redesign of the chat input bar.
