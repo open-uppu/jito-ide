@@ -148,15 +148,15 @@ npm run package
 | Slash commands (`/review`, `/test`, etc.) | ✅ done |
 | Status bar | ✅ done |
 | Settings + SecretStorage | ✅ done |
-| Inline edit (Ctrl+K) | ⏳ stub (v0.2.0) |
-| Multi-file selection | ⏳ planned (v0.2.0) |
-| Conversation history (SQLite) | ⏳ planned (v0.2.0) |
-| Theme support | ⏳ planned (v0.2.0) |
-| Marketplace publish | ⏳ planned (v0.1.0 GA) |
+| Inline edit (Ctrl+K) | ⏳ planned (v0.3.0) |
+| Multi-file selection | ⏳ planned (v0.3.0) |
+| Conversation history (SQLite) | ⏳ planned (v0.3.0) |
+| Theme support | ⏳ planned (v0.4.0) |
+| Marketplace publish | ✅ shipped (PR #6, awaiting human PAT) |
 
 ## License
 
-Private — uppu internal. (Will move to MIT/Apache for open beta.)
+**MIT** — see [LICENSE](./LICENSE). Copyright (c) 2026 uppu (open-uppu).
 
 ## Related
 
