@@ -115,6 +115,18 @@ try {
   await page.goto(fileUrl, { waitUntil: 'networkidle0', timeout: 20000 });
   await page.evaluate(() => document.fonts.ready);
 
+  // Dismiss the first-run Onboarding overlay before any other interaction.
+  // The full app always mounts <Onboarding />, and on first load it shows a
+  // modal with backdrop that intercepts mouse events — which would otherwise
+  // block every hover on palette rows below it.
+  // Storage key + version are duplicated from webview/src/components/Onboarding.tsx.
+  await page.evaluate(() => {
+    localStorage.setItem('jito-onboarding-seen', 'v0.2.0');
+  });
+  // Force a re-render so the Onboarding modal unmounts.
+  await page.reload({ waitUntil: 'networkidle0', timeout: 20000 });
+  await page.evaluate(() => document.fonts.ready);
+
   // Wait for React to mount + the palette to appear (auto-opened by the HTML).
   await page.waitForSelector('.palette', { timeout: 10000 });
   console.log('[smoke-phase-4.2] SlashPalette mounted.');
@@ -240,14 +252,22 @@ try {
 // React's onMouseEnter reliably.
   const commitRow = await page.$('.palette__row[data-cmd-id="commit"]');
   if (commitRow) {
-    const box = await commitRow.boundingBox();
-    if (box) {
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await new Promise((r) => setTimeout(r, 200));
-    }
+    // Scroll into view first (palette is 480px max-height; /commit is in
+    // Git group at the bottom and can be outside the visible area).
+    await page.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }), commitRow);
+    await new Promise((r) => setTimeout(r, 50));
+    // page.hover() moves the mouse to the element's center and triggers
+    // React's onMouseEnter reliably (raw mouse.move can miss if the
+    // element is below the fold).
+    await commitRow.hover();
+    await new Promise((r) => setTimeout(r, 250));
   }
   info = await page.evaluate(() => {
     const previewCmd = document.querySelector('.palette__preview-cmd');
+    // /commit's preview body contains a <pre class="palette__preview-block">
+    // whose text starts with "feat(palette): ..." — the canonical
+    // Conventional Commit example. Querying that specifically instead of
+    // the whole preview body, which leads with prose ("Reads git diff...").
     const block = document.querySelector('.palette__preview-block');
     return {
       previewCmd: previewCmd ? previewCmd.textContent.trim() : null,

@@ -132,7 +132,7 @@ describe('Composer', () => {
 
     renderComposer();
     await user.click(screen.getByRole('button', { name: 'Open slash commands' }));
-    await user.click(screen.getByRole('option', { name: /\/review Review code for issues/ }));
+    await user.click(screen.getByRole('option', { name: /\/review Review code for bugs/ }));
 
     expect(screen.getByRole('textbox', { name: 'Message composer' })).toHaveValue('/review ');
     expect(screen.queryByRole('listbox', { name: 'Slash commands' })).not.toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('Composer', () => {
     const textbox = screen.getByRole('textbox', { name: 'Message composer' });
     await user.type(textbox, 'existing text');
     await user.click(screen.getByRole('button', { name: 'Open slash commands' }));
-    await user.click(screen.getByRole('option', { name: /\/test Generate tests/ }));
+    await user.click(screen.getByRole('option', { name: /\/test Generate unit tests/ }));
 
     expect(textbox).toHaveValue('existing text');
     expect(screen.queryByRole('listbox', { name: 'Slash commands' })).not.toBeInTheDocument();
