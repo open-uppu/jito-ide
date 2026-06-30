@@ -1,0 +1,11 @@
+title: jito-ide — Multi-mode AI for VS Code
+description: Free, open-source VS Code extension with 5 first-class AI modes (dev/reason/create/audit/universal). Local-first, BYO API key.
+theme: jekyll-theme-cayman
+show_downloads: false
+paginate: 5
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+url: "https://ide.jito.dev"
+baseurl: ""
+lang: en-US
